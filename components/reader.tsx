@@ -176,11 +176,11 @@ export default function Reader({ entries, initialNumber }: ReaderProps) {
   return (
     <main className="min-h-screen bg-[#f6f3ed] text-[#24302d]">
       <header className="sticky top-0 z-20 border-b border-[#dddcd2] bg-[#f6f3ed]/95 backdrop-blur">
-        <div className="mx-auto flex h-[4.5rem] max-w-[1360px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-12">
+        <div className="mx-auto flex h-18 max-w-340 items-center justify-between gap-4 px-5 sm:px-8 lg:px-12">
           <Link
             href="/catecismo-maior"
             className="flex items-center gap-3"
-            aria-label="CW, início"
+            aria-label="Reformata, início"
           >
             <span className="grid size-10 place-items-center rounded-2xl bg-[#24302d] text-white shadow-sm">
               <BookOpen className="size-5" />
@@ -225,7 +225,7 @@ export default function Reader({ entries, initialNumber }: ReaderProps) {
           </div>
         </div>
       </header>
-      <div className="mx-auto grid max-w-[1360px] gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[260px_minmax(0,760px)] lg:gap-14 lg:px-12 lg:py-12 xl:grid-cols-[260px_minmax(0,760px)_220px]">
+      <div className="mx-auto grid max-w-340 gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[260px_minmax(0,760px)] lg:gap-14 lg:px-12 lg:py-12 xl:grid-cols-[260px_minmax(0,760px)_220px]">
         <aside
           className={`${mobileIndexOpen ? "block" : "hidden"} lg:block`}
           aria-label="Índice do Catecismo Maior"
@@ -420,9 +420,9 @@ export default function Reader({ entries, initialNumber }: ReaderProps) {
         </aside>
       </div>
       <footer className="border-t border-[#dddcd2] px-5 py-8 sm:px-8 lg:px-12">
-        <div className="mx-auto flex max-w-[1360px] flex-col justify-between gap-3 text-xs leading-5 text-[#84938a] sm:flex-row">
+        <div className="mx-auto flex max-w-340 flex-col justify-between gap-3 text-xs leading-5 text-[#84938a] sm:flex-row">
           <p>
-            © {new Date().getFullYear()} CW · Catecismo Maior de Westminster
+            © {new Date().getFullYear()} REFORMATA · A fé reformada em seus textos. Todos os direitos reservados.
           </p>
           <p>
             O texto bíblico depende de uma tradução licenciada e da atribuição
