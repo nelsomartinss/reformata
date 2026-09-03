@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -10,156 +10,44 @@ import {
   ChevronRight,
   Menu,
   Search,
-  ShieldCheck,
   X,
 } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { searchEntries, type CatechismEntry } from '@/lib/catechism';
-import type { PassageResponse } from '@/lib/bible';
+import PassagePanel from '@/components/passage-panel';
+import { normalizeSearchText } from '@/lib/catechism';
+import type { ConfessionChapter } from '@/lib/confession';
 
-function PassagePanel({
-  entry,
-  version,
-  documentSlug,
-}: {
-  entry: CatechismEntry;
-  version: string;
-  documentSlug: string;
-}) {
-  const [passages, setPassages] = useState<PassageResponse[]>([]);
-  const [state, setState] = useState<
-    'loading' | 'ready' | 'unavailable' | 'error' | 'empty'
-  >(entry.references.length === 0 ? 'empty' : 'loading');
-
-  useEffect(() => {
-    let active = true;
-    if (entry.references.length === 0) {
-      return () => {
-        active = false;
-      };
-    }
-    fetch(
-      '/api/bible/passages?document=' +
-        documentSlug +
-        '&number=' +
-        entry.number +
-        '&version=' +
-        version,
-    )
-      .then(async (response) => {
-        const data = (await response.json()) as {
-          error?: string;
-          passages?: PassageResponse[];
-        };
-        if (!response.ok) throw new Error(data.error ?? 'ERRO');
-        return { passages: data.passages ?? [] };
-      })
-      .then((data) => {
-        if (!active) return;
-        setPassages(data.passages);
-        setState('ready');
-      })
-      .catch((error: Error) => {
-        if (!active) return;
-        setState(
-          error.message === 'TRADUCAO_NAO_CONFIGURADA'
-            ? 'unavailable'
-            : 'error',
-        );
-      });
-    return () => {
-      active = false;
-    };
-  }, [documentSlug, entry.number, entry.references.length, version]);
-
-  return (
-    <section className="mt-8" aria-labelledby="references-heading">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="eyebrow">Referências bíblicas</p>
-          <h2
-            id="references-heading"
-            className="mt-1 font-serif text-2xl font-semibold text-foreground"
-          >
-            Textos que fundamentam esta resposta
-          </h2>
-        </div>
-        <Badge
-          variant="outline"
-          className="rounded-full border-[#c7d5cc] bg-[#eef4ef] px-3 py-1 text-[#3f5e4b]"
-        >
-          {version.toUpperCase()}
-        </Badge>
-      </div>
-      {state === 'loading' && (
-        <output className="mt-5 rounded-2xl border border-dashed border-[#c9d3cc] bg-white/60 p-5 text-sm text-muted-foreground">
-          Consultando as passagens autorizadas…
-        </output>
-      )}
-      {state === 'unavailable' && (
-        <div className="mt-5 rounded-2xl border border-[#e0d4ba] bg-[#fffaf0] p-5 text-sm leading-6 text-[#6d6048]">
-          A tradução selecionada ainda não está conectada a uma licença neste
-          ambiente. As referências continuam disponíveis acima; o texto bíblico
-          será exibido assim que a chave autorizada for configurada.
-        </div>
-      )}
-      {state === 'error' && (
-        <div className="mt-5 rounded-2xl border border-[#e5c5bd] bg-[#fff7f4] p-5 text-sm leading-6 text-[#875348]">
-          Não foi possível carregar as passagens agora. Tente novamente em
-          alguns instantes.
-        </div>
-      )}
-      {state === 'empty' && (
-        <div className="mt-5 rounded-2xl border border-[#d7dfd8] bg-white/60 p-5 text-sm leading-6 text-muted-foreground">
-          Esta edição do catecismo não registra referências bíblicas adicionais
-          para esta pergunta.
-        </div>
-      )}
-      {state === 'ready' && (
-        <div className="mt-5 space-y-4">
-          {passages.map((passage) => (
-            <article
-              key={passage.passageId}
-              className="rounded-2xl border border-[#dbe4dd] bg-[#f7faf7] p-5 sm:p-6"
-            >
-              <h3 className="text-sm font-bold tracking-wide text-[#476452]">
-                {passage.reference}
-              </h3>
-              <p className="mt-3 font-serif text-lg leading-8 text-[#2d3b34]">
-                {passage.content}
-              </p>
-            </article>
-          ))}
-          <p className="flex items-center gap-2 text-xs leading-5 text-muted-foreground">
-            <ShieldCheck className="size-3.5" /> Texto fornecido por provedor
-            bíblico autorizado. Direitos reservados ao editor da tradução.
-          </p>
-        </div>
-      )}
-    </section>
-  );
-}
-
-type ReaderProps = {
-  entries: CatechismEntry[];
-  initialNumber: number;
-  documentTitle?: string;
-  documentSlug?: string;
+type ConfessionReaderProps = {
+  chapters: ConfessionChapter[];
+  initialChapter: number;
+  initialParagraph: number;
 };
 
-export default function Reader({
-  entries,
-  initialNumber,
-  documentTitle = 'Catecismo Maior de Westminster',
-  documentSlug = 'catecismo-maior',
-}: ReaderProps) {
+export default function ConfessionReader({
+  chapters,
+  initialChapter,
+  initialParagraph,
+}: ConfessionReaderProps) {
   const router = useRouter();
-  const firstEntry =
-    entries.find((entry) => entry.number === initialNumber) ?? entries[0];
-  const [selectedNumber, setSelectedNumber] = useState(firstEntry.number);
+  const firstChapter =
+    chapters.find((chapter) => chapter.number === initialChapter) ??
+    chapters[0];
+  const firstParagraph =
+    firstChapter.paragraphs.find((item) => item.number === initialParagraph) ??
+    firstChapter.paragraphs[0];
+  const [selected, setSelected] = useState({
+    chapterNumber: firstChapter.number,
+    paragraphNumber: firstParagraph.number,
+  });
   const [query, setQuery] = useState('');
   const [version, setVersion] = useState<'ntlh' | 'ara'>(() => {
     if (typeof window === 'undefined') return 'ntlh';
@@ -167,35 +55,71 @@ export default function Reader({
     return saved === 'ntlh' || saved === 'ara' ? saved : 'ntlh';
   });
   const [mobileIndexOpen, setMobileIndexOpen] = useState(false);
+  const [openChapters, setOpenChapters] = useState<string[]>([
+    String(firstChapter.number),
+  ]);
+  const chapter =
+    chapters.find((item) => item.number === selected.chapterNumber) ??
+    firstChapter;
   const entry =
-    entries.find((item) => item.number === selectedNumber) ?? entries[0];
-  const results = useMemo(
-    () => searchEntries(entries, query),
-    [entries, query],
+    chapter.paragraphs.find(
+      (item) => item.number === selected.paragraphNumber,
+    ) ?? firstParagraph;
+  const sequence = useMemo(
+    () =>
+      chapters.flatMap((item) =>
+        item.paragraphs.map((paragraph) => ({ chapter: item, paragraph })),
+      ),
+    [chapters],
   );
-  const currentPosition = entries.findIndex(
-    (item) => item.number === entry.number,
+  const currentPosition = sequence.findIndex(
+    (item) =>
+      item.chapter.number === chapter.number &&
+      item.paragraph.number === entry.number,
   );
-  const previous = entries[currentPosition - 1];
-  const next = entries[currentPosition + 1];
-  function selectQuestion(number: number) {
-    setSelectedNumber(number);
+  const previous = sequence[currentPosition - 1];
+  const next = sequence[currentPosition + 1];
+  const normalizedQuery = normalizeSearchText(query);
+  const visibleChapters = useMemo(
+    () =>
+      chapters
+        .map((item) => ({
+          ...item,
+          paragraphs: item.paragraphs.filter((paragraph) => {
+            if (!normalizedQuery) return true;
+            const haystack = normalizeSearchText(
+              `${item.number} ${item.title} ${paragraph.number} ${paragraph.statement} ${paragraph.references.join(' ')}`,
+            );
+            return haystack.includes(normalizedQuery);
+          }),
+        }))
+        .filter((item) => item.paragraphs.length > 0),
+    [chapters, normalizedQuery],
+  );
+
+  function selectParagraph(chapterNumber: number, paragraphNumber: number) {
+    setSelected({ chapterNumber, paragraphNumber });
+    setOpenChapters((current) =>
+      current.includes(String(chapterNumber))
+        ? current
+        : [...current, String(chapterNumber)],
+    );
     setMobileIndexOpen(false);
-    router.push('/' + documentSlug + '/pergunta/' + number);
+    router.push(`/confissao-de-fe/${chapterNumber}/${paragraphNumber}`);
   }
+
   function selectVersion(nextVersion: string) {
     if (nextVersion !== 'ntlh' && nextVersion !== 'ara') return;
     setVersion(nextVersion);
     window.localStorage.setItem('cw-bible-version', nextVersion);
   }
-  const noResults = Boolean(query) && results.length === 0;
 
   return (
     <main className="min-h-screen bg-[#f6f3ed] text-[#24302d]">
       <header className="sticky top-0 z-20 border-b border-[#dddcd2] bg-[#f6f3ed]/95 backdrop-blur">
         <div className="mx-auto flex h-18 max-w-340 items-center justify-between gap-4 px-5 sm:px-8 lg:px-12">
           <Link
-            href={'/' + documentSlug}
+            href="/confissao-de-fe"
             className="flex items-center gap-3"
             aria-label="Reformata, início"
           >
@@ -216,27 +140,19 @@ export default function Reader({
             className="hidden items-center gap-1 md:flex"
           >
             <Link
-              className={
-                documentSlug === 'catecismo-maior'
-                  ? 'rounded-full bg-white/70 px-4 py-2 text-sm text-[#24302d]'
-                  : 'rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70'
-              }
+              className="rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70"
               href="/catecismo-maior"
             >
               Catecismo Maior
             </Link>
             <Link
-              className={
-                documentSlug === 'breve-catecismo'
-                  ? 'rounded-full bg-white/70 px-4 py-2 text-sm text-[#24302d]'
-                  : 'rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70'
-              }
+              className="rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70"
               href="/breve-catecismo"
             >
               Breve Catecismo
             </Link>
             <Link
-              className="rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70"
+              className="rounded-full bg-white/70 px-4 py-2 text-sm text-[#24302d]"
               href="/confissao-de-fe"
             >
               Confissão de Fé
@@ -254,17 +170,17 @@ export default function Reader({
           </div>
         </div>
       </header>
-      <div className="mx-auto grid max-w-340 gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[260px_minmax(0,760px)] lg:gap-14 lg:px-12 lg:py-12 xl:grid-cols-[260px_minmax(0,760px)_220px]">
+      <div className="mx-auto grid max-w-340 gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[280px_minmax(0,760px)] lg:gap-14 lg:px-12 lg:py-12 xl:grid-cols-[280px_minmax(0,760px)_220px]">
         <aside
           className={`${mobileIndexOpen ? 'block' : 'hidden'} lg:block`}
-          aria-label={'Índice do ' + documentTitle}
+          aria-label="Índice da Confissão de Fé"
         >
           <div className="lg:sticky lg:top-24">
             <div className="flex items-center justify-between">
               <div>
                 <p className="eyebrow">Índice</p>
                 <h2 className="mt-1 font-serif text-xl font-semibold">
-                  {entries.length} perguntas
+                  35 capítulos
                 </h2>
               </div>
               <Button
@@ -277,37 +193,65 @@ export default function Reader({
                 <X className="size-4" />
               </Button>
             </div>
-            <label htmlFor="question-search" className="relative mt-5 block">
+            <label htmlFor="confession-search" className="relative mt-5 block">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#84938a]" />
               <Input
-                id="question-search"
+                id="confession-search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar pergunta…"
+                placeholder="Buscar afirmação…"
                 className="h-11 rounded-xl border-[#d6ddd7] bg-white/75 pl-9"
               />
             </label>
-            <div className="mt-4 max-h-[calc(100vh-240px)] space-y-1 overflow-y-auto pr-1">
-              {results.map((item) => (
-                <button
-                  key={item.number}
-                  type="button"
-                  onClick={() => selectQuestion(item.number)}
-                  className={`group flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition ${item.number === entry.number ? 'bg-[#e2ede5] text-[#2c5140]' : 'text-[#65746c] hover:bg-white/70 hover:text-[#24302d]'}`}
-                >
-                  <span
-                    className={`mt-0.5 w-8 shrink-0 text-xs font-bold ${item.number === entry.number ? 'text-[#426d53]' : 'text-[#9aa69e]'}`}
+            <div className="mt-4 max-h-[calc(100vh-240px)] overflow-y-auto pr-1">
+              <Accordion
+                multiple
+                value={openChapters}
+                onValueChange={setOpenChapters}
+              >
+                {visibleChapters.map((item) => (
+                  <AccordionItem
+                    key={item.number}
+                    value={String(item.number)}
+                    className="border-[#dfe5df]"
                   >
-                    {String(item.number).padStart(2, '0')}
-                  </span>
-                  <span className="line-clamp-2 text-sm leading-5">
-                    {item.question}
-                  </span>
-                </button>
-              ))}
-              {noResults && (
+                    <AccordionTrigger className="w-full px-3 text-[#435c4b] hover:no-underline">
+                      <span className="flex min-w-0 items-start gap-3 pr-2">
+                        <span className="mt-0.5 w-8 shrink-0 text-xs font-bold text-[#91a097]">
+                          {item.roman}
+                        </span>
+                        <span className="text-left text-sm leading-5">
+                          {item.title}
+                        </span>
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent className="pl-2">
+                      <div className="space-y-1 border-l border-[#d7e1d9] pl-3">
+                        {item.paragraphs.map((paragraph) => (
+                          <button
+                            key={`${item.number}-${paragraph.number}`}
+                            type="button"
+                            onClick={() =>
+                              selectParagraph(item.number, paragraph.number)
+                            }
+                            className={`group flex w-full items-start gap-3 rounded-xl px-3 py-2 text-left transition ${item.number === chapter.number && paragraph.number === entry.number ? 'bg-[#e2ede5] text-[#2c5140]' : 'text-[#65746c] hover:bg-white/70 hover:text-[#24302d]'}`}
+                          >
+                            <span className="mt-0.5 w-6 shrink-0 text-xs font-bold text-[#9aa69e]">
+                              {paragraph.roman}
+                            </span>
+                            <span className="line-clamp-2 text-sm leading-5">
+                              {paragraph.statement}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+              {visibleChapters.length === 0 && (
                 <p className="px-3 py-4 text-sm text-muted-foreground">
-                  Nenhuma pergunta encontrada.
+                  Nenhuma afirmação encontrada.
                 </p>
               )}
             </div>
@@ -318,7 +262,7 @@ export default function Reader({
             <div>
               <p className="eyebrow">Leitura guiada</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Pergunta {entry.number} de {entries.length}
+                Capítulo {chapter.roman} · afirmação {entry.roman}
               </p>
             </div>
             <Button
@@ -331,20 +275,21 @@ export default function Reader({
           </div>
           <div className="mb-8 flex items-start justify-between gap-5">
             <div>
-              <p className="eyebrow">{documentTitle}</p>
+              <p className="eyebrow">Confissão de Fé de Westminster</p>
               <h1 className="mt-2 max-w-3xl font-serif text-4xl font-semibold leading-[1.08] tracking-[-0.025em] text-[#24302d] sm:text-5xl">
-                Pergunta {entry.number}
+                Capítulo {chapter.roman}
               </h1>
+              <p className="mt-3 max-w-2xl font-serif text-xl text-[#64736a]">
+                {chapter.title}
+              </p>
             </div>
             <div className="hidden rounded-2xl border border-[#d7dfd8] bg-white/60 p-3 text-right sm:block">
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#84938a]">
                 Progresso
               </p>
               <p className="mt-1 text-lg font-semibold text-[#426d53]">
-                {String(entry.number).padStart(2, '0')}{' '}
-                <span className="text-sm font-normal text-[#95a199]">
-                  / {entries.length}
-                </span>
+                {chapter.number}{' '}
+                <span className="text-sm font-normal text-[#95a199]">/ 35</span>
               </p>
             </div>
           </div>
@@ -352,27 +297,23 @@ export default function Reader({
             <CardContent className="p-6 sm:p-9 lg:p-11">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="rounded-full bg-[#e2ede5] px-3 py-1 text-[#426d53] hover:bg-[#e2ede5]">
-                  Pergunta {entry.number}
+                  Afirmação {entry.roman}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  Doutrina cristã reformada
+                  Capítulo {chapter.number} · {chapter.title}
                 </span>
               </div>
-              <h2 className="mt-6 font-serif text-2xl font-semibold leading-tight text-[#26362e] sm:text-[2rem]">
-                {entry.question}
-              </h2>
-              <div className="my-8 h-px bg-[#e8ebe6]" />
-              <div>
-                <p className="eyebrow">Resposta</p>
-                <p className="mt-3 font-serif text-xl leading-9 text-[#3d4c44] sm:text-2xl sm:leading-10">
-                  {entry.answer}
+              <div className="mt-6 rounded-2xl border border-[#e8ebe6] bg-[#fbfcfa] p-5 sm:p-7">
+                <p className="eyebrow">Texto confessional</p>
+                <p className="mt-4 font-serif text-xl leading-9 text-[#3d4c44] sm:text-2xl sm:leading-10">
+                  {entry.statement}
                 </p>
               </div>
               <div className="mt-9 rounded-2xl border border-[#dce6df] bg-[#f4f8f4] p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <label
-                      htmlFor="bible-version"
+                      htmlFor="confession-bible-version"
                       className="block text-sm font-bold text-[#365541]"
                     >
                       Tradução bíblica
@@ -382,7 +323,7 @@ export default function Reader({
                     </p>
                   </div>
                   <select
-                    id="bible-version"
+                    id="confession-bible-version"
                     value={version}
                     onChange={(event) => selectVersion(event.target.value)}
                     className="h-10 min-w-48 rounded-xl border border-[#cbd9cf] bg-white px-3 text-sm font-semibold text-[#365541] outline-none focus:border-[#6a9275] focus:ring-3 focus:ring-[#a9c7b1]/40"
@@ -406,10 +347,12 @@ export default function Reader({
                 </div>
               </div>
               <PassagePanel
-                key={`${entry.number}-${version}`}
-                entry={entry}
+                key={`${chapter.number}-${entry.number}-${version}`}
+                references={entry.references}
                 version={version}
-                documentSlug={documentSlug}
+                documentSlug="confissao-de-fe"
+                chapterNumber={chapter.number}
+                paragraphNumber={entry.number}
               />
             </CardContent>
           </Card>
@@ -418,19 +361,28 @@ export default function Reader({
               variant="outline"
               className="h-11 rounded-full border-[#cfd9d1] bg-white/60 px-4"
               disabled={!previous}
-              onClick={() => previous && selectQuestion(previous.number)}
+              onClick={() =>
+                previous &&
+                selectParagraph(
+                  previous.chapter.number,
+                  previous.paragraph.number,
+                )
+              }
             >
               <ChevronLeft className="size-4" />{' '}
               <span className="hidden sm:inline">Anterior</span>
             </Button>
             <p className="text-xs font-semibold text-[#84938a]">
-              {entry.number} / {entries.length}
+              {entry.globalNumber} / {sequence.length}
             </p>
             <Button
               variant="outline"
               className="h-11 rounded-full border-[#cfd9d1] bg-white/60 px-4"
               disabled={!next}
-              onClick={() => next && selectQuestion(next.number)}
+              onClick={() =>
+                next &&
+                selectParagraph(next.chapter.number, next.paragraph.number)
+              }
             >
               <span className="hidden sm:inline">Próxima</span>{' '}
               <ChevronRight className="size-4" />
@@ -442,13 +394,15 @@ export default function Reader({
             <div className="rounded-2xl border border-[#d7dfd8] bg-[#eaf2eb] p-5">
               <Check className="size-5 text-[#527a5d]" />
               <p className="mt-4 text-sm font-semibold leading-6 text-[#365541]">
-                Leia com calma. O índice acompanha você em cada pergunta.
+                Os acordeons acompanham cada capítulo; as setas seguem a leitura
+                sem interromper o fluxo.
               </p>
             </div>
             <div className="rounded-2xl border border-[#deded4] bg-[#fbfaf5] p-5">
               <p className="eyebrow">Fonte</p>
               <p className="mt-3 text-sm leading-6 text-[#6c776f]">
-                Texto organizado para leitura digital e estudo pessoal.
+                Texto organizado para leitura digital e estudo pessoal a partir
+                da edição fornecida.
               </p>
             </div>
           </div>

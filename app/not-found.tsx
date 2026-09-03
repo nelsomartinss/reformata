@@ -9,7 +9,7 @@ export default function NotFound() {
           Esta pergunta não foi encontrada.
         </h1>
         <p className="mt-4 text-muted-foreground">
-          Volte ao índice para continuar a leitura do Catecismo Maior.
+          Volte ao índice para continuar a leitura.
         </p>
         <Link
           className="mt-8 inline-flex rounded-full bg-[#24302d] px-5 py-3 text-sm font-semibold text-white"
