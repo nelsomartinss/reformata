@@ -32,14 +32,11 @@ function PassagePanel({
   const [passages, setPassages] = useState<PassageResponse[]>([]);
   const [state, setState] = useState<
     "loading" | "ready" | "unavailable" | "error" | "empty"
-  >("loading");
+  >(entry.references.length === 0 ? "empty" : "loading");
 
   useEffect(() => {
     let active = true;
-    setState("loading");
-    setPassages([]);
     if (entry.references.length === 0) {
-      setState("empty");
       return () => {
         active = false;
       };
@@ -69,7 +66,7 @@ function PassagePanel({
     return () => {
       active = false;
     };
-  }, [entry.number, version]);
+  }, [entry.number, entry.references.length, version]);
 
   return (
     <section className="mt-8" aria-labelledby="references-heading">
@@ -91,12 +88,11 @@ function PassagePanel({
         </Badge>
       </div>
       {state === "loading" && (
-        <div
+        <output
           className="mt-5 rounded-2xl border border-dashed border-[#c9d3cc] bg-white/60 p-5 text-sm text-muted-foreground"
-          role="status"
         >
           Consultando as passagens autorizadas…
-        </div>
+        </output>
       )}
       {state === "unavailable" && (
         <div className="mt-5 rounded-2xl border border-[#e0d4ba] bg-[#fffaf0] p-5 text-sm leading-6 text-[#6d6048]">
@@ -148,12 +144,12 @@ export default function Reader({ entries, initialNumber }: ReaderProps) {
     entries.find((entry) => entry.number === initialNumber) ?? entries[0];
   const [selectedNumber, setSelectedNumber] = useState(firstEntry.number);
   const [query, setQuery] = useState("");
-  const [version, setVersion] = useState("ntlh");
-  const [mobileIndexOpen, setMobileIndexOpen] = useState(false);
-  useEffect(() => {
+  const [version, setVersion] = useState<"ntlh" | "ara">(() => {
+    if (typeof window === "undefined") return "ntlh";
     const saved = window.localStorage.getItem("cw-bible-version");
-    if (saved === "ntlh" || saved === "ara") setVersion(saved);
-  }, []);
+    return saved === "ntlh" || saved === "ara" ? saved : "ntlh";
+  });
+  const [mobileIndexOpen, setMobileIndexOpen] = useState(false);
   const entry =
     entries.find((item) => item.number === selectedNumber) ?? entries[0];
   const results = useMemo(() => searchEntries(query), [query]);
@@ -168,6 +164,7 @@ export default function Reader({ entries, initialNumber }: ReaderProps) {
     router.push(`/catecismo-maior/pergunta/${number}`);
   }
   function selectVersion(nextVersion: string) {
+    if (nextVersion !== "ntlh" && nextVersion !== "ara") return;
     setVersion(nextVersion);
     window.localStorage.setItem("cw-bible-version", nextVersion);
   }
@@ -248,9 +245,10 @@ export default function Reader({ entries, initialNumber }: ReaderProps) {
                 <X className="size-4" />
               </Button>
             </div>
-            <label className="relative mt-5 block">
+            <label htmlFor="question-search" className="relative mt-5 block">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#84938a]" />
               <Input
+                id="question-search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar pergunta…"
@@ -375,7 +373,7 @@ export default function Reader({ entries, initialNumber }: ReaderProps) {
                   ))}
                 </div>
               </div>
-              <PassagePanel entry={entry} version={version} />
+          <PassagePanel key={`${entry.number}-${version}`} entry={entry} version={version} />
             </CardContent>
           </Card>
           <div className="mt-6 flex items-center justify-between gap-3">
