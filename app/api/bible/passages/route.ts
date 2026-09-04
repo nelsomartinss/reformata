@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchPassages } from '@/lib/bible';
+import { BibleServiceError, fetchPassages } from '@/lib/bible';
 import { greaterCatechism } from '@/lib/catechism';
 import { getConfessionParagraph } from '@/lib/confession';
 import { shortCatechism } from '@/lib/short-catechism';
@@ -28,25 +28,20 @@ export async function GET(request: Request) {
       ? getConfessionParagraph(chapter, paragraph)
       : undefined;
   const references = entry?.references ?? confessionEntry?.paragraph.references;
-  if (!version || !references)
+  if (!references)
     return NextResponse.json(
       { error: 'Pergunta ou tradução inválida.' },
       { status: 400 },
     );
   try {
-    const passages = await fetchPassages(version, references);
-    return NextResponse.json(
-      { passages },
-      { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=604800' } },
-    );
+    const result = await fetchPassages(version || undefined, references);
+    return NextResponse.json(result, {
+      headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=604800' },
+    });
   } catch (error) {
-    const code = error instanceof Error ? error.message : 'ERRO_DESCONHECIDO';
-    const status =
-      code === 'TRADUCAO_NAO_CONFIGURADA'
-        ? 503
-        : code === 'PROVEDOR_429'
-          ? 429
-          : 502;
+    const code =
+      error instanceof BibleServiceError ? error.code : 'API_INDISPONIVEL';
+    const status = error instanceof BibleServiceError ? error.status : 502;
     return NextResponse.json({ error: code }, { status });
   }
 }

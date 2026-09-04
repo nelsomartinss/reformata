@@ -47,7 +47,7 @@ export default function ThesesReader() {
               Confissão de Fé
             </Link>
             <Link
-              className="rounded-full bg-[#f7f2e8] px-4 py-2 text-sm font-semibold text-[#302f2a] shadow-sm"
+              className="whitespace-nowrap rounded-full bg-[#f7f2e8] px-4 py-2 text-sm font-semibold text-[#302f2a] shadow-sm"
               href="/95-teses"
               aria-current="page"
             >
@@ -104,7 +104,7 @@ export default function ThesesReader() {
             </p>
           </div>
 
-          <div className="mx-auto mt-8 max-w-3xl rounded-[1.5rem] border border-[#d6cbbb] bg-[#f7f2e8] p-6 shadow-[0_18px_50px_rgba(79,63,42,0.08)] sm:mt-10 sm:p-9">
+          <div className="mx-auto mt-8 max-w-3xl rounded-3xl border border-[#d6cbbb] bg-[#f7f2e8] p-6 shadow-[0_18px_50px_rgba(79,63,42,0.08)] sm:mt-10 sm:p-9">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a7045]">
               Prólogo
             </p>

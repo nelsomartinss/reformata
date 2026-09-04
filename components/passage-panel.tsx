@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { PassageResponse } from '@/lib/bible';
+import type { PassageBatchResponse, PassageResponse } from '@/lib/bible';
 
 type PassagePanelProps = {
   references: string[];
@@ -23,6 +23,7 @@ export default function PassagePanel({
   paragraphNumber,
 }: PassagePanelProps) {
   const [passages, setPassages] = useState<PassageResponse[]>([]);
+  const [failedReferences, setFailedReferences] = useState<string[]>([]);
   const [state, setState] = useState<
     'loading' | 'ready' | 'unavailable' | 'error' | 'empty'
   >(references.length === 0 ? 'empty' : 'loading');
@@ -49,19 +50,25 @@ export default function PassagePanel({
         const data = (await response.json()) as {
           error?: string;
           passages?: PassageResponse[];
+          failedReferences?: string[];
         };
         if (!response.ok) throw new Error(data.error ?? 'ERRO');
-        return { passages: data.passages ?? [] };
+        return {
+          passages: data.passages ?? [],
+          failedReferences: data.failedReferences ?? [],
+        } satisfies PassageBatchResponse;
       })
       .then((data) => {
         if (!active) return;
         setPassages(data.passages);
+        setFailedReferences(data.failedReferences);
         setState('ready');
       })
       .catch((error: Error) => {
         if (!active) return;
         setState(
-          error.message === 'TRADUCAO_NAO_CONFIGURADA'
+          error.message === 'TRADUCAO_NAO_CONFIGURADA' ||
+            error.message === 'API_CHAVE_NAO_CONFIGURADA'
             ? 'unavailable'
             : 'error',
         );
@@ -123,6 +130,12 @@ export default function PassagePanel({
       )}
       {state === 'ready' && (
         <div className="mt-5 space-y-4">
+          {failedReferences.length > 0 && (
+            <p className="rounded-2xl border border-[#e0d4ba] bg-[#fffaf0] p-4 text-sm leading-6 text-[#6d6048]">
+              Algumas referências não estão disponíveis nesta tradução:{' '}
+              {failedReferences.join(', ')}.
+            </p>
+          )}
           {passages.map((passage) => (
             <article
               key={passage.passageId}
@@ -140,6 +153,11 @@ export default function PassagePanel({
             <ShieldCheck className="size-3.5" /> Texto fornecido por provedor
             bíblico autorizado. Direitos reservados ao editor da tradução.
           </p>
+          {passages[0]?.copyright && (
+            <p className="text-xs leading-5 text-muted-foreground">
+              {passages[0].copyright}
+            </p>
+          )}
         </div>
       )}
     </section>

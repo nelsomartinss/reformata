@@ -17,8 +17,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import BibleVersionSelect from '@/components/bible-version-select';
 import { searchEntries, type CatechismEntry } from '@/lib/catechism';
-import type { PassageResponse } from '@/lib/bible';
+import type { PassageBatchResponse, PassageResponse } from '@/lib/bible';
 
 function PassagePanel({
   entry,
@@ -30,6 +31,7 @@ function PassagePanel({
   documentSlug: string;
 }) {
   const [passages, setPassages] = useState<PassageResponse[]>([]);
+  const [failedReferences, setFailedReferences] = useState<string[]>([]);
   const [state, setState] = useState<
     'loading' | 'ready' | 'unavailable' | 'error' | 'empty'
   >(entry.references.length === 0 ? 'empty' : 'loading');
@@ -53,19 +55,25 @@ function PassagePanel({
         const data = (await response.json()) as {
           error?: string;
           passages?: PassageResponse[];
+          failedReferences?: string[];
         };
         if (!response.ok) throw new Error(data.error ?? 'ERRO');
-        return { passages: data.passages ?? [] };
+        return {
+          passages: data.passages ?? [],
+          failedReferences: data.failedReferences ?? [],
+        } satisfies PassageBatchResponse;
       })
       .then((data) => {
         if (!active) return;
         setPassages(data.passages);
+        setFailedReferences(data.failedReferences);
         setState('ready');
       })
       .catch((error: Error) => {
         if (!active) return;
         setState(
-          error.message === 'TRADUCAO_NAO_CONFIGURADA'
+          error.message === 'TRADUCAO_NAO_CONFIGURADA' ||
+            error.message === 'API_CHAVE_NAO_CONFIGURADA'
             ? 'unavailable'
             : 'error',
         );
@@ -91,7 +99,7 @@ function PassagePanel({
           variant="outline"
           className="rounded-full border-[#c7d5cc] bg-[#eef4ef] px-3 py-1 text-[#3f5e4b]"
         >
-          {version.toUpperCase()}
+          {version ? 'API.Bible' : '—'}
         </Badge>
       </div>
       {state === 'loading' && (
@@ -120,6 +128,12 @@ function PassagePanel({
       )}
       {state === 'ready' && (
         <div className="mt-5 space-y-4">
+          {failedReferences.length > 0 && (
+            <p className="rounded-2xl border border-[#e0d4ba] bg-[#fffaf0] p-4 text-sm leading-6 text-[#6d6048]">
+              Algumas referências não estão disponíveis nesta tradução:{' '}
+              {failedReferences.join(', ')}.
+            </p>
+          )}
           {passages.map((passage) => (
             <article
               key={passage.passageId}
@@ -137,6 +151,11 @@ function PassagePanel({
             <ShieldCheck className="size-3.5" /> Texto fornecido por provedor
             bíblico autorizado. Direitos reservados ao editor da tradução.
           </p>
+          {passages[0]?.copyright && (
+            <p className="text-xs leading-5 text-muted-foreground">
+              {passages[0].copyright}
+            </p>
+          )}
         </div>
       )}
     </section>
@@ -161,10 +180,10 @@ export default function Reader({
     entries.find((entry) => entry.number === initialNumber) ?? entries[0];
   const [selectedNumber, setSelectedNumber] = useState(firstEntry.number);
   const [query, setQuery] = useState('');
-  const [version, setVersion] = useState<'ntlh' | 'ara'>(() => {
-    if (typeof window === 'undefined') return 'ntlh';
+  const [version, setVersion] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
     const saved = window.localStorage.getItem('cw-bible-version');
-    return saved === 'ntlh' || saved === 'ara' ? saved : 'ntlh';
+    return saved ?? '';
   });
   const [mobileIndexOpen, setMobileIndexOpen] = useState(false);
   const entry =
@@ -184,7 +203,7 @@ export default function Reader({
     router.push('/' + documentSlug + '/pergunta/' + number);
   }
   function selectVersion(nextVersion: string) {
-    if (nextVersion !== 'ntlh' && nextVersion !== 'ara') return;
+    if (!nextVersion) return;
     setVersion(nextVersion);
     window.localStorage.setItem('cw-bible-version', nextVersion);
   }
@@ -236,7 +255,7 @@ export default function Reader({
               Breve Catecismo
             </Link>
             <Link
-              className="rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70"
+              className="whitespace-nowrap rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70"
               href="/confissao-de-fe"
             >
               Confissão de Fé
@@ -381,15 +400,11 @@ export default function Reader({
                       Escolha como deseja ler as referências abaixo.
                     </p>
                   </div>
-                  <select
+                  <BibleVersionSelect
                     id="bible-version"
                     value={version}
-                    onChange={(event) => selectVersion(event.target.value)}
-                    className="h-10 min-w-48 rounded-xl border border-[#cbd9cf] bg-white px-3 text-sm font-semibold text-[#365541] outline-none focus:border-[#6a9275] focus:ring-3 focus:ring-[#a9c7b1]/40"
-                  >
-                    <option value="ntlh">NTLH · Nova Tradução</option>
-                    <option value="ara">ARA · Almeida Atualizada</option>
-                  </select>
+                    onChange={selectVersion}
+                  />
                 </div>
               </div>
               <div className="mt-8">

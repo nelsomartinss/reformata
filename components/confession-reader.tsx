@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import BibleVersionSelect from '@/components/bible-version-select';
 import PassagePanel from '@/components/passage-panel';
 import { normalizeSearchText } from '@/lib/catechism';
 import type { ConfessionChapter } from '@/lib/confession';
@@ -49,10 +50,10 @@ export default function ConfessionReader({
     paragraphNumber: firstParagraph.number,
   });
   const [query, setQuery] = useState('');
-  const [version, setVersion] = useState<'ntlh' | 'ara'>(() => {
-    if (typeof window === 'undefined') return 'ntlh';
+  const [version, setVersion] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
     const saved = window.localStorage.getItem('cw-bible-version');
-    return saved === 'ntlh' || saved === 'ara' ? saved : 'ntlh';
+    return saved ?? '';
   });
   const [mobileIndexOpen, setMobileIndexOpen] = useState(false);
   const [openChapters, setOpenChapters] = useState<string[]>([
@@ -109,7 +110,7 @@ export default function ConfessionReader({
   }
 
   function selectVersion(nextVersion: string) {
-    if (nextVersion !== 'ntlh' && nextVersion !== 'ara') return;
+    if (!nextVersion) return;
     setVersion(nextVersion);
     window.localStorage.setItem('cw-bible-version', nextVersion);
   }
@@ -140,7 +141,7 @@ export default function ConfessionReader({
             className="hidden items-center gap-1 md:flex"
           >
             <Link
-              className="rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70"
+              className="whitespace-nowrap rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70"
               href="/catecismo-maior"
             >
               Catecismo Maior
@@ -322,15 +323,11 @@ export default function ConfessionReader({
                       Escolha como deseja ler as referências abaixo.
                     </p>
                   </div>
-                  <select
+                  <BibleVersionSelect
                     id="confession-bible-version"
                     value={version}
-                    onChange={(event) => selectVersion(event.target.value)}
-                    className="h-10 min-w-48 rounded-xl border border-[#cbd9cf] bg-white px-3 text-sm font-semibold text-[#365541] outline-none focus:border-[#6a9275] focus:ring-3 focus:ring-[#a9c7b1]/40"
-                  >
-                    <option value="ntlh">NTLH · Nova Tradução</option>
-                    <option value="ara">ARA · Almeida Atualizada</option>
-                  </select>
+                    onChange={selectVersion}
+                  />
                 </div>
               </div>
               <div className="mt-8">

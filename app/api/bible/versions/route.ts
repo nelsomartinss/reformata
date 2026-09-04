@@ -1,6 +1,23 @@
 import { NextResponse } from 'next/server';
-import { listBibleVersions } from '@/lib/bible';
+import { BibleServiceError, getAvailablePortugueseBibles } from '@/lib/bible';
 
-export function GET() {
-  return NextResponse.json({ versions: listBibleVersions() }, { headers: { 'Cache-Control': 'public, max-age=300' } });
+export async function GET() {
+  try {
+    const versions = await getAvailablePortugueseBibles();
+    return NextResponse.json(
+      { versions },
+      { headers: { 'Cache-Control': 'private, max-age=300' } },
+    );
+  } catch (error) {
+    if (error instanceof BibleServiceError) {
+      return NextResponse.json(
+        { error: 'Nao foi possivel consultar as traducoes disponiveis.' },
+        { status: error.status },
+      );
+    }
+    return NextResponse.json(
+      { error: 'Nao foi possivel consultar as traducoes disponiveis.' },
+      { status: 502 },
+    );
+  }
 }

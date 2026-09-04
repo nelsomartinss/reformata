@@ -36,3 +36,7 @@ yarn-error.log*
 /.wrangler/
 /outputs/
 /work/
+
+# agents
+AGENTS.md
+CLAUDE.md
