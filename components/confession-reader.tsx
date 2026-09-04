@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -50,12 +50,12 @@ export default function ConfessionReader({
     paragraphNumber: firstParagraph.number,
   });
   const [query, setQuery] = useState('');
-  const [version, setVersion] = useState<string>(() => {
-    if (typeof window === 'undefined') return '';
-    const saved = window.localStorage.getItem('cw-bible-version');
-    return saved ?? '';
-  });
+  const [version, setVersion] = useState('');
   const [mobileIndexOpen, setMobileIndexOpen] = useState(false);
+  useEffect(() => {
+    const saved = window.localStorage.getItem('cw-bible-version');
+    if (saved) window.setTimeout(() => setVersion(saved), 0);
+  }, []);
   const [openChapters, setOpenChapters] = useState<string[]>([
     String(firstChapter.number),
   ]);

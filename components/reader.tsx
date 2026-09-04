@@ -180,12 +180,12 @@ export default function Reader({
     entries.find((entry) => entry.number === initialNumber) ?? entries[0];
   const [selectedNumber, setSelectedNumber] = useState(firstEntry.number);
   const [query, setQuery] = useState('');
-  const [version, setVersion] = useState<string>(() => {
-    if (typeof window === 'undefined') return '';
-    const saved = window.localStorage.getItem('cw-bible-version');
-    return saved ?? '';
-  });
+  const [version, setVersion] = useState('');
   const [mobileIndexOpen, setMobileIndexOpen] = useState(false);
+  useEffect(() => {
+    const saved = window.localStorage.getItem('cw-bible-version');
+    if (saved) window.setTimeout(() => setVersion(saved), 0);
+  }, []);
   const entry =
     entries.find((item) => item.number === selectedNumber) ?? entries[0];
   const results = useMemo(
