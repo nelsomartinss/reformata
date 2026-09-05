@@ -4,8 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  BookOpen,
-  Check,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -18,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import BibleVersionSelect from '@/components/bible-version-select';
+import SiteBrand from '@/components/site-brand';
+import StudyTools from '@/components/study-tools';
 import { searchEntries, type CatechismEntry } from '@/lib/catechism';
 import type { PassageBatchResponse, PassageResponse } from '@/lib/bible';
 
@@ -188,6 +188,12 @@ export default function Reader({
   }, []);
   const entry =
     entries.find((item) => item.number === selectedNumber) ?? entries[0];
+  const studyReference = `${documentTitle} · Pergunta ${entry.number}`;
+  const studyContent = [
+    `Pergunta: ${entry.question}`,
+    `Resposta: ${entry.answer}`,
+    `Referências: ${entry.references.join(', ')}`,
+  ].join('\n');
   const results = useMemo(
     () => searchEntries(entries, query),
     [entries, query],
@@ -213,23 +219,7 @@ export default function Reader({
     <main className="min-h-screen bg-[#f6f3ed] text-[#24302d]">
       <header className="sticky top-0 z-20 border-b border-[#dddcd2] bg-[#f6f3ed]/95 backdrop-blur">
         <div className="mx-auto flex h-18 max-w-340 items-center justify-between gap-4 px-5 sm:px-8 lg:px-12">
-          <Link
-            href={'/' + documentSlug}
-            className="flex items-center gap-3"
-            aria-label="Reformata, início"
-          >
-            <span className="grid size-10 place-items-center rounded-2xl bg-[#24302d] text-white shadow-sm">
-              <BookOpen className="size-5" />
-            </span>
-            <span>
-              <span className="block font-serif text-lg font-semibold leading-none">
-                REFORMATA
-              </span>
-              <span className="mt-1 hidden text-[10px] font-bold uppercase tracking-[0.18em] text-[#718078] sm:block">
-                A fé reformada em seus textos
-              </span>
-            </span>
-          </Link>
+          <SiteBrand href="/" />
           <nav
             aria-label="Documentos"
             className="hidden items-center gap-1 md:flex"
@@ -428,6 +418,9 @@ export default function Reader({
               />
             </CardContent>
           </Card>
+          <div className="mt-6 xl:hidden">
+            <StudyTools reference={studyReference} content={studyContent} />
+          </div>
           <div className="mt-6 flex items-center justify-between gap-3">
             <Button
               variant="outline"
@@ -453,19 +446,8 @@ export default function Reader({
           </div>
         </section>
         <aside className="hidden xl:block">
-          <div className="sticky top-24 space-y-4">
-            <div className="rounded-2xl border border-[#d7dfd8] bg-[#eaf2eb] p-5">
-              <Check className="size-5 text-[#527a5d]" />
-              <p className="mt-4 text-sm font-semibold leading-6 text-[#365541]">
-                Leia com calma. O índice acompanha você em cada pergunta.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-[#deded4] bg-[#fbfaf5] p-5">
-              <p className="eyebrow">Fonte</p>
-              <p className="mt-3 text-sm leading-6 text-[#6c776f]">
-                Texto organizado para leitura digital e estudo pessoal.
-              </p>
-            </div>
+          <div className="sticky top-24">
+            <StudyTools reference={studyReference} content={studyContent} />
           </div>
         </aside>
       </div>

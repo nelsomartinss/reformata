@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  BookOpen,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -24,6 +23,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import BibleVersionSelect from '@/components/bible-version-select';
 import PassagePanel from '@/components/passage-panel';
+import SiteBrand from '@/components/site-brand';
+import StudyTools from '@/components/study-tools';
 import { normalizeSearchText } from '@/lib/catechism';
 import type { ConfessionChapter } from '@/lib/confession';
 
@@ -66,6 +67,11 @@ export default function ConfessionReader({
     chapter.paragraphs.find(
       (item) => item.number === selected.paragraphNumber,
     ) ?? firstParagraph;
+  const studyReference = `Confissão de Fé de Westminster · Capítulo ${chapter.roman}, afirmação ${entry.roman}`;
+  const studyContent = [
+    `Afirmação: ${entry.statement}`,
+    `Referências: ${entry.references.join(', ')}`,
+  ].join('\n');
   const sequence = useMemo(
     () =>
       chapters.flatMap((item) =>
@@ -119,23 +125,7 @@ export default function ConfessionReader({
     <main className="min-h-screen bg-[#f6f3ed] text-[#24302d]">
       <header className="sticky top-0 z-20 border-b border-[#dddcd2] bg-[#f6f3ed]/95 backdrop-blur">
         <div className="mx-auto flex h-18 max-w-340 items-center justify-between gap-4 px-5 sm:px-8 lg:px-12">
-          <Link
-            href="/confissao-de-fe"
-            className="flex items-center gap-3"
-            aria-label="Reformata, início"
-          >
-            <span className="grid size-10 place-items-center rounded-2xl bg-[#24302d] text-white shadow-sm">
-              <BookOpen className="size-5" />
-            </span>
-            <span>
-              <span className="block font-serif text-lg font-semibold leading-none">
-                REFORMATA
-              </span>
-              <span className="mt-1 hidden text-[10px] font-bold uppercase tracking-[0.18em] text-[#718078] sm:block">
-                A fé reformada em seus textos
-              </span>
-            </span>
-          </Link>
+          <SiteBrand href="/" />
           <nav
             aria-label="Documentos"
             className="hidden items-center gap-1 md:flex"
@@ -353,6 +343,9 @@ export default function ConfessionReader({
               />
             </CardContent>
           </Card>
+          <div className="mt-6 xl:hidden">
+            <StudyTools reference={studyReference} content={studyContent} />
+          </div>
           <div className="mt-6 flex items-center justify-between gap-3">
             <Button
               variant="outline"
@@ -395,13 +388,7 @@ export default function ConfessionReader({
                 sem interromper o fluxo.
               </p>
             </div>
-            <div className="rounded-2xl border border-[#deded4] bg-[#fbfaf5] p-5">
-              <p className="eyebrow">Fonte</p>
-              <p className="mt-3 text-sm leading-6 text-[#6c776f]">
-                Texto organizado para leitura digital e estudo pessoal a partir
-                da edição fornecida.
-              </p>
-            </div>
+            <StudyTools reference={studyReference} content={studyContent} />
           </div>
         </aside>
       </div>

@@ -1,29 +1,15 @@
 import Link from 'next/link';
-import { BookOpen, ScrollText } from 'lucide-react';
+import Image from 'next/image';
+import { ScrollText } from 'lucide-react';
 import { thesesDocument } from '@/lib/theses';
+import SiteBrand from '@/components/site-brand';
 
 export default function ThesesReader() {
   return (
     <main className="min-h-screen bg-[#ebe7dc] text-[#302f2a]">
       <header className="border-b border-[#d5cec0] bg-[#ebe7dc]/95">
         <div className="mx-auto flex min-h-18 max-w-340 items-center justify-between gap-4 px-5 py-3 sm:px-8 lg:px-12">
-          <Link
-            href="/catecismo-maior"
-            className="flex items-center gap-3"
-            aria-label="Reformata, início"
-          >
-            <span className="grid size-10 place-items-center rounded-2xl bg-[#302f2a] text-[#f7f2e8] shadow-sm">
-              <BookOpen className="size-5" />
-            </span>
-            <span>
-              <span className="block font-serif text-lg font-semibold leading-none">
-                REFORMATA
-              </span>
-              <span className="mt-1 hidden text-[10px] font-bold uppercase tracking-[0.18em] text-[#817b70] sm:block">
-                A fé reformada em seus textos
-              </span>
-            </span>
-          </Link>
+          <SiteBrand href="/" tone="sand" />
           <nav
             aria-label="Documentos"
             className="hidden items-center gap-1 overflow-x-auto md:flex"
@@ -61,7 +47,7 @@ export default function ThesesReader() {
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-340 gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[190px_minmax(0,820px)] lg:gap-14 lg:px-12 lg:py-14">
+      <div className="mx-auto grid max-w-340 gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[190px_minmax(0,820px)] lg:gap-14 lg:px-12 lg:py-14 xl:grid-cols-[190px_minmax(0,820px)_220px]">
         <aside className="order-2 lg:order-1">
           <div className="lg:sticky lg:top-8">
             <div className="flex items-center gap-2 text-[#9a7045]">
@@ -147,6 +133,30 @@ export default function ThesesReader() {
             </p>
           </div>
         </article>
+
+        <aside className="order-3 hidden xl:block">
+          <div className="sticky top-24">
+            <figure className="overflow-hidden rounded-2xl border border-[#d5cec0] bg-[#f7f2e8] shadow-[0_18px_50px_rgba(79,63,42,0.1)]">
+              <div className="relative aspect-[1076/737]">
+                <Image
+                  src="/95-teses-pintura.webp"
+                  alt="Martinho Lutero diante das 95 Teses em Wittenberg"
+                  fill
+                  sizes="220px"
+                  className="object-cover"
+                />
+              </div>
+              <figcaption className="border-t border-[#d5cec0] px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#9a7045]">
+                  A Reforma · 1517
+                </p>
+                <p className="mt-1 text-xs leading-5 text-[#817b70]">
+                  Martinho Lutero em Wittenberg.
+                </p>
+              </figcaption>
+            </figure>
+          </div>
+        </aside>
       </div>
 
       <footer className="border-t border-[#d5cec0] px-5 py-8 sm:px-8 lg:px-12">
