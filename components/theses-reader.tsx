@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ScrollText } from 'lucide-react';
+import DocumentSwitcher from '@/components/document-switcher';
 import { thesesDocument } from '@/lib/theses';
 import SiteBrand from '@/components/site-brand';
 
@@ -40,6 +41,7 @@ export default function ThesesReader() {
               95 Teses de Martinho Lutero
             </Link>
           </nav>
+          <DocumentSwitcher currentSlug="95-teses" tone="sand" />
           <span className="hidden items-center gap-2 text-xs font-semibold text-[#817b70] sm:flex">
             <span>1517</span>
             <span className="size-2 rounded-full bg-[#b08b5e]" />
@@ -137,7 +139,7 @@ export default function ThesesReader() {
         <aside className="order-3 hidden xl:block">
           <div className="sticky top-24">
             <figure className="overflow-hidden rounded-2xl border border-[#d5cec0] bg-[#f7f2e8] shadow-[0_18px_50px_rgba(79,63,42,0.1)]">
-              <div className="relative aspect-[1076/737]">
+              <div className="relative aspect-1076/737">
                 <Image
                   src="/95-teses-pintura.webp"
                   alt="Martinho Lutero diante das 95 Teses em Wittenberg"

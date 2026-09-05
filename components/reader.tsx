@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import BibleVersionSelect from '@/components/bible-version-select';
+import DocumentSwitcher from '@/components/document-switcher';
 import SiteBrand from '@/components/site-brand';
 import StudyTools from '@/components/study-tools';
 import { searchEntries, type CatechismEntry } from '@/lib/catechism';
@@ -257,6 +258,7 @@ export default function Reader({
               95 Teses de Martinho Lutero
             </Link>
           </nav>
+          <DocumentSwitcher currentSlug={documentSlug} />
           <div className="flex items-center gap-2 text-xs font-semibold text-[#718078]">
             <span className="hidden sm:inline">Edição de estudo</span>
             <span className="size-2 rounded-full bg-[#a7bfae]" />
