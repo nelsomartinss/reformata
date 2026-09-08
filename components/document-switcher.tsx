@@ -8,6 +8,11 @@ type DocumentSwitcherProps = {
 
 const documents = [
   {
+    slug: 'biblia',
+    label: 'Bíblia',
+    href: '/biblia',
+  },
+  {
     slug: 'catecismo-maior',
     label: 'Catecismo Maior',
     href: '/catecismo-maior',

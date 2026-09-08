@@ -2,11 +2,13 @@ import { canonicalBookIds, normalizeBookName } from './books';
 import { parseBibleReference, rangePassageId } from './parser';
 import {
   BibleServiceError,
+  type BibleApiChapter,
   type BibleApiBible,
   type BibleApiBook,
   type BibleApiEnvelope,
   type BibleApiPassage,
   type BibleVersion,
+  type BibleChapterResponse,
   type PassageResponse,
   type PassageBatchResponse,
   type ParsedBibleReference,
@@ -101,9 +103,19 @@ function toVersion(bible: BibleApiBible, configuredId?: string): BibleVersion {
     abbreviation: bible.abbreviationLocal ?? bible.abbreviation ?? bible.id,
     name: bible.nameLocal ?? bible.name ?? 'Traducao biblica',
     publisher: 'API.Bible',
-    configured: bible.id === configuredId,
+    configured: true,
+    default: bible.id === configuredId,
     copyright: bible.copyright,
   };
+}
+
+function getConfiguredBibleIds() {
+  const configured = (process.env.BIBLE_IDS ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const legacy = process.env.BIBLE_ID?.trim();
+  return [...new Set(configured.length > 0 ? configured : legacy ? [legacy] : [])];
 }
 
 export async function getAvailablePortugueseBibles(): Promise<BibleVersion[]> {
@@ -115,8 +127,12 @@ export async function getAvailablePortugueseBibles(): Promise<BibleVersion[]> {
     '/v1/bibles',
     params,
   );
-  return (response.data ?? []).map((bible) =>
-    toVersion(bible, process.env.BIBLE_ID?.trim()),
+  const configuredIds = getConfiguredBibleIds();
+  const bibles = (response.data ?? []).filter((bible) =>
+    configuredIds.includes(bible.id),
+  );
+  return bibles.map((bible) =>
+    toVersion(bible, process.env.BIBLE_ID?.trim() ?? configuredIds[0]),
   );
 }
 
@@ -177,6 +193,82 @@ function createVerses(content: string, parsed: ParsedBibleReference) {
     }));
   }
   return [{ number: parsed.ranges[0].start, text: clean }];
+}
+
+async function resolveTranslation(requestedBibleId?: string) {
+  const bibles = await getAvailablePortugueseBibles();
+  const configuredId = process.env.BIBLE_ID?.trim();
+  const bibleId =
+    bibles.find((bible) => bible.id === requestedBibleId)?.id ??
+    bibles.find((bible) => bible.id === configuredId)?.id ??
+    bibles[0]?.id;
+  if (!bibleId) {
+    throw new BibleServiceError(
+      'TRADUCAO_NAO_CONFIGURADA',
+      503,
+      'Nenhuma traducao portuguesa foi selecionada.',
+    );
+  }
+  const translation = bibles.find((bible) => bible.id === bibleId);
+  if (!translation) {
+    throw new BibleServiceError(
+      'TRADUCAO_NAO_ENCONTRADA',
+      404,
+      'A traducao selecionada nao foi encontrada.',
+    );
+  }
+  return { bibleId, translation };
+}
+
+async function fetchChapter(bibleId: string, bookId: string, chapter: number) {
+  const params = new URLSearchParams({
+    'content-type': 'text',
+    'include-notes': 'false',
+    'include-titles': 'true',
+    'include-chapter-numbers': 'false',
+    'include-verse-numbers': 'true',
+    'include-verse-spans': 'true',
+  });
+  const response = await request<BibleApiEnvelope<BibleApiChapter>>(
+    '/v1/bibles/' +
+      encodeURIComponent(bibleId) +
+      '/chapters/' +
+      encodeURIComponent(bookId + '.' + chapter),
+    params,
+  );
+  if (!response.data) {
+    throw new BibleServiceError(
+      'API_NAO_ENCONTRADA',
+      404,
+      'O capitulo biblico nao foi encontrado.',
+    );
+  }
+  return response.data;
+}
+
+export async function getBibleChapter(
+  requestedBibleId: string | undefined,
+  bookId: string,
+  chapter: number,
+): Promise<BibleChapterResponse> {
+  const { bibleId, translation } = await resolveTranslation(requestedBibleId);
+  const parsed: ParsedBibleReference = {
+    original: bookId + ' ' + chapter + ':1',
+    normalized: bookId + ' ' + chapter + ':1',
+    book: bookId,
+    chapter,
+    ranges: [{ start: 1, end: 1 }],
+  };
+  const apiBookId = await resolveBookId(bibleId, parsed);
+  const result = await fetchChapter(bibleId, apiBookId, chapter);
+  const verses = createVerses(result.content ?? '', parsed);
+  return {
+    book: bookId,
+    chapter,
+    verses,
+    translation,
+    copyright: result.copyright ?? translation.copyright,
+  };
 }
 
 async function fetchRange(bibleId: string, passageId: string) {
@@ -256,26 +348,7 @@ export async function fetchPassages(
   requestedBibleId: string | undefined,
   references: string[],
 ): Promise<PassageBatchResponse> {
-  const bibles = await getAvailablePortugueseBibles();
-  const configuredId = process.env.BIBLE_ID?.trim();
-  const bibleId =
-    bibles.find((bible) => bible.id === requestedBibleId)?.id ??
-    bibles.find((bible) => bible.id === configuredId)?.id;
-  if (!bibleId) {
-    throw new BibleServiceError(
-      'TRADUCAO_NAO_CONFIGURADA',
-      503,
-      'Nenhuma traducao portuguesa foi selecionada.',
-    );
-  }
-  const translation = bibles.find((bible) => bible.id === bibleId);
-  if (!translation) {
-    throw new BibleServiceError(
-      'TRADUCAO_NAO_ENCONTRADA',
-      404,
-      'A traducao selecionada nao foi encontrada.',
-    );
-  }
+  const { bibleId, translation } = await resolveTranslation(requestedBibleId);
   const uniqueReferences = [
     ...new Set(references.map((reference) => reference.trim())),
   ];

@@ -4,6 +4,7 @@ export type BibleVersion = {
   name: string;
   publisher: string;
   configured: boolean;
+  default?: boolean;
   copyright?: string;
 };
 
@@ -20,9 +21,33 @@ export type ParsedBibleReference = {
   ranges: VerseRange[];
 };
 
+export type BibleReferenceLink = {
+  id: string;
+  book: string;
+  chapter: number;
+  verseStart: number;
+  verseEnd: number;
+  documentSlug: string;
+  documentTitle: string;
+  label: string;
+  excerpt: string;
+  href: string;
+  kind: 'question' | 'paragraph' | 'thesis';
+  sourceReference: string;
+};
+
 export type BibleVerse = {
   number: number;
   text: string;
+  references?: BibleReferenceLink[];
+};
+
+export type BibleChapterResponse = {
+  book: string;
+  chapter: number;
+  verses: BibleVerse[];
+  translation: BibleVersion;
+  copyright?: string;
 };
 
 export type PassageResponse = {
@@ -67,6 +92,17 @@ export type BibleApiBook = {
 export type BibleApiPassage = {
   id?: string;
   bibleId?: string;
+  content?: string;
+  reference?: string;
+  verseCount?: number;
+  copyright?: string;
+};
+
+export type BibleApiChapter = {
+  id?: string;
+  bibleId?: string;
+  number?: string;
+  bookId?: string;
   content?: string;
   reference?: string;
   verseCount?: number;

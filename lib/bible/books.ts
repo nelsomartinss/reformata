@@ -76,6 +76,7 @@ export function normalizeBookName(value: string) {
     .trim()
     .toLowerCase()
     .replace(/[.]/g, '')
+    .replace(/\s+/g, '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 }
@@ -83,7 +84,14 @@ export function normalizeBookName(value: string) {
 export function getCanonicalBookId(value: string) {
   const raw = value.trim().toLowerCase().replace(/[.]$/, '');
   if (raw === 'j\u00f3') return 'JOB';
-  return aliases[normalizeBookName(value)];
+  if (canonicalBookIds.includes(raw.toUpperCase())) return raw.toUpperCase();
+  const normalized = normalizeBookName(value);
+  const romanPrefix = normalized.match(/^(i{1,3})([a-z\u00c0-\u00ff]+)$/);
+  if (romanPrefix) {
+    const romanToArabic: Record<string, string> = { i: '1', ii: '2', iii: '3' };
+    return aliases[romanToArabic[romanPrefix[1]] + romanPrefix[2]];
+  }
+  return aliases[normalized];
 }
 
 export const canonicalBookIds = [...new Set(Object.values(aliases))];

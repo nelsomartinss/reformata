@@ -155,6 +155,7 @@ export default function ConfessionReader({
             >
               95 Teses de Martinho Lutero
             </Link>
+            <Link href='/biblia'>Bíblia</Link>
           </nav>
           <DocumentSwitcher currentSlug="confissao-de-fe" />
           <div className="flex items-center gap-2 text-xs font-semibold text-[#718078]">

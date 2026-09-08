@@ -33,9 +33,23 @@ export default function BibleVersionSelect({
         if (!active) return;
         setVersions(nextVersions);
         setState('ready');
-        const configured = nextVersions.find((version) => version.configured);
-        if (!value && configured) onChange(configured.id);
-        if (value && !nextVersions.some((version) => version.id === value)) {
+        const configured = nextVersions.find(
+          (version) => version.default || version.configured,
+        );
+        const saved = window.localStorage.getItem('cw-bible-version');
+        const preferred = value || saved;
+        if (
+          preferred &&
+          nextVersions.some((version) => version.id === preferred) &&
+          preferred !== value
+        ) {
+          onChange(preferred);
+        } else if (!preferred && configured) {
+          onChange(configured.id);
+        } else if (
+          value &&
+          !nextVersions.some((version) => version.id === value)
+        ) {
           onChange(configured?.id ?? '');
         }
       })

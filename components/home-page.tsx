@@ -4,6 +4,7 @@ import {
   BookMarked,
   BookOpen,
   FileText,
+  Library,
   Search,
   ScrollText,
 } from 'lucide-react';
@@ -17,6 +18,15 @@ import { thesesDocument } from '@/lib/theses';
 const quote = shortCatechism[0];
 
 const documentCards = [
+  {
+    href: '/biblia',
+    eyebrow: 'Leitura bíblica',
+    title: 'Bíblia',
+    description: 'Leia os capítulos bíblicos nas traduções autorizadas e encontre as referências ligadas aos documentos.',
+    count: 'Livros e capítulos',
+    icon: Library,
+    tone: 'blue',
+  },
   {
     href: '/catecismo-maior',
     eyebrow: 'Westminster · maior',
@@ -83,6 +93,12 @@ const toneStyles = {
     icon: 'bg-[#f3eadd] text-[#9a7045]',
     eyebrow: 'text-[#9a7045]',
     arrow: 'text-[#9a7045]',
+  },
+  blue: {
+    number: 'bg-[#416273] text-[#f6f3ed]',
+    icon: 'bg-[#e5eef1] text-[#416273]',
+    eyebrow: 'text-[#416273]',
+    arrow: 'text-[#416273]',
   },
 } as const;
 
@@ -213,7 +229,7 @@ export default function HomePage() {
             <div>
               <p className="eyebrow">01 · O acervo</p>
               <h2 className="mt-3 max-w-2xl font-serif text-3xl font-semibold tracking-[-0.025em] text-[#2f4037] sm:text-4xl">
-                Quatro caminhos para uma leitura mais profunda.
+                Cinco caminhos para uma leitura mais profunda.
               </h2>
             </div>
             <p className="max-w-xs text-sm leading-6 text-[#718078]">

@@ -40,6 +40,7 @@ export default function ThesesReader() {
             >
               95 Teses de Martinho Lutero
             </Link>
+            <Link href='/biblia'>Bíblia</Link>
           </nav>
           <DocumentSwitcher currentSlug="95-teses" tone="sand" />
           <span className="hidden items-center gap-2 text-xs font-semibold text-[#817b70] sm:flex">

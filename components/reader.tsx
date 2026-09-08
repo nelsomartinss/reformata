@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,17 +10,17 @@ import {
   Search,
   ShieldCheck,
   X,
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import BibleVersionSelect from '@/components/bible-version-select';
-import DocumentSwitcher from '@/components/document-switcher';
-import SiteBrand from '@/components/site-brand';
-import StudyTools from '@/components/study-tools';
-import { searchEntries, type CatechismEntry } from '@/lib/catechism';
-import type { PassageBatchResponse, PassageResponse } from '@/lib/bible';
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import BibleVersionSelect from "@/components/bible-version-select";
+import DocumentSwitcher from "@/components/document-switcher";
+import SiteBrand from "@/components/site-brand";
+import StudyTools from "@/components/study-tools";
+import { searchEntries, type CatechismEntry } from "@/lib/catechism";
+import type { PassageBatchResponse, PassageResponse } from "@/lib/bible";
 
 function PassagePanel({
   entry,
@@ -34,8 +34,8 @@ function PassagePanel({
   const [passages, setPassages] = useState<PassageResponse[]>([]);
   const [failedReferences, setFailedReferences] = useState<string[]>([]);
   const [state, setState] = useState<
-    'loading' | 'ready' | 'unavailable' | 'error' | 'empty'
-  >(entry.references.length === 0 ? 'empty' : 'loading');
+    "loading" | "ready" | "unavailable" | "error" | "empty"
+  >(entry.references.length === 0 ? "empty" : "loading");
 
   useEffect(() => {
     let active = true;
@@ -45,11 +45,11 @@ function PassagePanel({
       };
     }
     fetch(
-      '/api/bible/passages?document=' +
+      "/api/bible/passages?document=" +
         documentSlug +
-        '&number=' +
+        "&number=" +
         entry.number +
-        '&version=' +
+        "&version=" +
         version,
     )
       .then(async (response) => {
@@ -58,7 +58,7 @@ function PassagePanel({
           passages?: PassageResponse[];
           failedReferences?: string[];
         };
-        if (!response.ok) throw new Error(data.error ?? 'ERRO');
+        if (!response.ok) throw new Error(data.error ?? "ERRO");
         return {
           passages: data.passages ?? [],
           failedReferences: data.failedReferences ?? [],
@@ -68,15 +68,15 @@ function PassagePanel({
         if (!active) return;
         setPassages(data.passages);
         setFailedReferences(data.failedReferences);
-        setState('ready');
+        setState("ready");
       })
       .catch((error: Error) => {
         if (!active) return;
         setState(
-          error.message === 'TRADUCAO_NAO_CONFIGURADA' ||
-            error.message === 'API_CHAVE_NAO_CONFIGURADA'
-            ? 'unavailable'
-            : 'error',
+          error.message === "TRADUCAO_NAO_CONFIGURADA" ||
+            error.message === "API_CHAVE_NAO_CONFIGURADA"
+            ? "unavailable"
+            : "error",
         );
       });
     return () => {
@@ -100,39 +100,39 @@ function PassagePanel({
           variant="outline"
           className="rounded-full border-[#c7d5cc] bg-[#eef4ef] px-3 py-1 text-[#3f5e4b]"
         >
-          {version ? 'API.Bible' : '—'}
+          {version ? "API.Bible" : "—"}
         </Badge>
       </div>
-      {state === 'loading' && (
+      {state === "loading" && (
         <output className="mt-5 rounded-2xl border border-dashed border-[#c9d3cc] bg-white/60 p-5 text-sm text-muted-foreground">
           Consultando as passagens autorizadas…
         </output>
       )}
-      {state === 'unavailable' && (
+      {state === "unavailable" && (
         <div className="mt-5 rounded-2xl border border-[#e0d4ba] bg-[#fffaf0] p-5 text-sm leading-6 text-[#6d6048]">
           A tradução selecionada ainda não está conectada a uma licença neste
           ambiente. As referências continuam disponíveis acima; o texto bíblico
           será exibido assim que a chave autorizada for configurada.
         </div>
       )}
-      {state === 'error' && (
+      {state === "error" && (
         <div className="mt-5 rounded-2xl border border-[#e5c5bd] bg-[#fff7f4] p-5 text-sm leading-6 text-[#875348]">
           Não foi possível carregar as passagens agora. Tente novamente em
           alguns instantes.
         </div>
       )}
-      {state === 'empty' && (
+      {state === "empty" && (
         <div className="mt-5 rounded-2xl border border-[#d7dfd8] bg-white/60 p-5 text-sm leading-6 text-muted-foreground">
           Esta edição do catecismo não registra referências bíblicas adicionais
           para esta pergunta.
         </div>
       )}
-      {state === 'ready' && (
+      {state === "ready" && (
         <div className="mt-5 space-y-4">
           {failedReferences.length > 0 && (
             <p className="rounded-2xl border border-[#e0d4ba] bg-[#fffaf0] p-4 text-sm leading-6 text-[#6d6048]">
-              Algumas referências não estão disponíveis nesta tradução:{' '}
-              {failedReferences.join(', ')}.
+              Algumas referências não estão disponíveis nesta tradução:{" "}
+              {failedReferences.join(", ")}.
             </p>
           )}
           {passages.map((passage) => (
@@ -173,18 +173,18 @@ type ReaderProps = {
 export default function Reader({
   entries,
   initialNumber,
-  documentTitle = 'Catecismo Maior de Westminster',
-  documentSlug = 'catecismo-maior',
+  documentTitle = "Catecismo Maior de Westminster",
+  documentSlug = "catecismo-maior",
 }: ReaderProps) {
   const router = useRouter();
   const firstEntry =
     entries.find((entry) => entry.number === initialNumber) ?? entries[0];
   const [selectedNumber, setSelectedNumber] = useState(firstEntry.number);
-  const [query, setQuery] = useState('');
-  const [version, setVersion] = useState('');
+  const [query, setQuery] = useState("");
+  const [version, setVersion] = useState("");
   const [mobileIndexOpen, setMobileIndexOpen] = useState(false);
   useEffect(() => {
-    const saved = window.localStorage.getItem('cw-bible-version');
+    const saved = window.localStorage.getItem("cw-bible-version");
     if (saved) window.setTimeout(() => setVersion(saved), 0);
   }, []);
   const entry =
@@ -193,8 +193,8 @@ export default function Reader({
   const studyContent = [
     `Pergunta: ${entry.question}`,
     `Resposta: ${entry.answer}`,
-    `Referências: ${entry.references.join(', ')}`,
-  ].join('\n');
+    `Referências: ${entry.references.join(", ")}`,
+  ].join("\n");
   const results = useMemo(
     () => searchEntries(entries, query),
     [entries, query],
@@ -207,12 +207,12 @@ export default function Reader({
   function selectQuestion(number: number) {
     setSelectedNumber(number);
     setMobileIndexOpen(false);
-    router.push('/' + documentSlug + '/pergunta/' + number);
+    router.push("/" + documentSlug + "/pergunta/" + number);
   }
   function selectVersion(nextVersion: string) {
     if (!nextVersion) return;
     setVersion(nextVersion);
-    window.localStorage.setItem('cw-bible-version', nextVersion);
+    window.localStorage.setItem("cw-bible-version", nextVersion);
   }
   const noResults = Boolean(query) && results.length === 0;
 
@@ -226,10 +226,16 @@ export default function Reader({
             className="hidden items-center gap-1 md:flex"
           >
             <Link
+              className="rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70"
+              href="/biblia"
+            >
+              Bíblia
+            </Link>
+            <Link
               className={
-                documentSlug === 'catecismo-maior'
-                  ? 'rounded-full bg-white/70 px-4 py-2 text-sm text-[#24302d]'
-                  : 'rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70'
+                documentSlug === "catecismo-maior"
+                  ? "rounded-full bg-white/70 px-4 py-2 text-sm text-[#24302d]"
+                  : "rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70"
               }
               href="/catecismo-maior"
             >
@@ -237,9 +243,9 @@ export default function Reader({
             </Link>
             <Link
               className={
-                documentSlug === 'breve-catecismo'
-                  ? 'rounded-full bg-white/70 px-4 py-2 text-sm text-[#24302d]'
-                  : 'rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70'
+                documentSlug === "breve-catecismo"
+                  ? "rounded-full bg-white/70 px-4 py-2 text-sm text-[#24302d]"
+                  : "rounded-full px-4 py-2 text-sm text-muted-foreground hover:bg-white/70"
               }
               href="/breve-catecismo"
             >
@@ -267,8 +273,8 @@ export default function Reader({
       </header>
       <div className="mx-auto grid max-w-340 gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[260px_minmax(0,760px)] lg:gap-14 lg:px-12 lg:py-12 xl:grid-cols-[260px_minmax(0,760px)_220px]">
         <aside
-          className={`${mobileIndexOpen ? 'block' : 'hidden'} lg:block`}
-          aria-label={'Índice do ' + documentTitle}
+          className={`${mobileIndexOpen ? "block" : "hidden"} lg:block`}
+          aria-label={"Índice do " + documentTitle}
         >
           <div className="lg:sticky lg:top-24">
             <div className="flex items-center justify-between">
@@ -304,12 +310,12 @@ export default function Reader({
                   key={item.number}
                   type="button"
                   onClick={() => selectQuestion(item.number)}
-                  className={`group flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition ${item.number === entry.number ? 'bg-[#e2ede5] text-[#2c5140]' : 'text-[#65746c] hover:bg-white/70 hover:text-[#24302d]'}`}
+                  className={`group flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition ${item.number === entry.number ? "bg-[#e2ede5] text-[#2c5140]" : "text-[#65746c] hover:bg-white/70 hover:text-[#24302d]"}`}
                 >
                   <span
-                    className={`mt-0.5 w-8 shrink-0 text-xs font-bold ${item.number === entry.number ? 'text-[#426d53]' : 'text-[#9aa69e]'}`}
+                    className={`mt-0.5 w-8 shrink-0 text-xs font-bold ${item.number === entry.number ? "text-[#426d53]" : "text-[#9aa69e]"}`}
                   >
-                    {String(item.number).padStart(2, '0')}
+                    {String(item.number).padStart(2, "0")}
                   </span>
                   <span className="line-clamp-2 text-sm leading-5">
                     {item.question}
@@ -352,7 +358,7 @@ export default function Reader({
                 Progresso
               </p>
               <p className="mt-1 text-lg font-semibold text-[#426d53]">
-                {String(entry.number).padStart(2, '0')}{' '}
+                {String(entry.number).padStart(2, "0")}{" "}
                 <span className="text-sm font-normal text-[#95a199]">
                   / {entries.length}
                 </span>
@@ -430,7 +436,7 @@ export default function Reader({
               disabled={!previous}
               onClick={() => previous && selectQuestion(previous.number)}
             >
-              <ChevronLeft className="size-4" />{' '}
+              <ChevronLeft className="size-4" />{" "}
               <span className="hidden sm:inline">Anterior</span>
             </Button>
             <p className="text-xs font-semibold text-[#84938a]">
@@ -442,7 +448,7 @@ export default function Reader({
               disabled={!next}
               onClick={() => next && selectQuestion(next.number)}
             >
-              <span className="hidden sm:inline">Próxima</span>{' '}
+              <span className="hidden sm:inline">Próxima</span>{" "}
               <ChevronRight className="size-4" />
             </Button>
           </div>
