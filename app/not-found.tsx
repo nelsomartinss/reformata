@@ -1,23 +1,30 @@
-import Link from "next/link";
+import Link from 'next/link';
+import SiteFooter from '@/components/site-footer';
+import SiteHeader from '@/components/site-header';
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f6f3ed] px-6 text-[#24302d]">
-      <div className="max-w-md text-center">
-        <p className="eyebrow">REFORMATA · 404</p>
-        <h1 className="mt-4 font-serif text-4xl font-semibold">
-          Esta pergunta não foi encontrada.
+    <>
+      <SiteHeader />
+      <main className="mx-auto flex max-w-xl flex-col items-center px-4 py-20 text-center">
+        <p className="text-sm font-medium text-muted-foreground">
+          Página não encontrada
+        </p>
+        <h1 className="mt-3 font-serif text-3xl font-semibold tracking-tight">
+          Não encontramos o que você procurava.
         </h1>
-        <p className="mt-4 text-muted-foreground">
-          Volte ao índice para continuar a leitura.
+        <p className="mt-3 text-muted-foreground">
+          O endereço pode estar incorreto ou o trecho mudou de lugar. Escolha um
+          texto na página inicial para continuar a leitura.
         </p>
         <Link
-          className="mt-8 inline-flex rounded-full bg-[#24302d] px-5 py-3 text-sm font-semibold text-white"
-          href="/catecismo-maior"
+          className="mt-8 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          href="/"
         >
-          Ir para o índice
+          Voltar ao início
         </Link>
-      </div>
-    </main>
+      </main>
+      <SiteFooter />
+    </>
   );
 }

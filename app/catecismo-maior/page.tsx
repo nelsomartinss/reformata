@@ -3,7 +3,7 @@ import Reader from "@/components/reader";
 import { greaterCatechism } from "@/lib/catechism";
 
 export const metadata: Metadata = {
-  title: "Catecismo Maior de Westminster | REFORMATA",
+  title: "Catecismo Maior de Westminster",
   description:
     "Leia as 196 perguntas e respostas do Catecismo Maior de Westminster com suas referências bíblicas.",
 };

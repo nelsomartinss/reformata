@@ -1,13 +1,32 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, LoaderCircle, Search, X } from 'lucide-react';
+import { LoaderCircle, Search, X } from 'lucide-react';
+import Notice from '@/components/notice';
 import type { GlobalSearchResult } from '@/lib/search';
+import { cn } from '@/lib/utils';
 
 type SearchState = 'idle' | 'loading' | 'ready' | 'error';
 
-export default function HomeSearch() {
+type HomeSearchProps = {
+  id?: string;
+  /**
+   * Mostra os resultados num painel flutuante sobre a página, sem empurrar o
+   * conteúdo (usado na página inicial). Sem ele, os resultados ficam abaixo do
+   * campo (usado na janela de busca).
+   */
+  floating?: boolean;
+  onNavigate?: () => void;
+};
+
+export default function HomeSearch({
+  id = 'global-search',
+  floating,
+  onNavigate,
+}: HomeSearchProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [panelOpen, setPanelOpen] = useState(true);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [state, setState] = useState<SearchState>('idle');
@@ -59,8 +78,20 @@ export default function HomeSearch() {
 
   const hasQuery = query.trim().length >= 2;
 
+  // No painel flutuante, clicar fora fecha os resultados.
+  useEffect(() => {
+    if (!floating) return;
+    function onPointerDown(event: PointerEvent) {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node))
+        setPanelOpen(false);
+    }
+    window.addEventListener('pointerdown', onPointerDown);
+    return () => window.removeEventListener('pointerdown', onPointerDown);
+  }, [floating]);
+
   function handleQueryChange(nextQuery: string) {
     setQuery(nextQuery);
+    setPanelOpen(true);
     if (nextQuery.trim().length < 2) {
       setResults([]);
       setState('idle');
@@ -68,39 +99,49 @@ export default function HomeSearch() {
   }
 
   return (
-    <div className="relative">
-      <label htmlFor="global-search" className="sr-only">
-        Pesquisar no acervo
+    <div ref={rootRef} className="relative">
+      <label htmlFor={id} className="sr-only">
+        Buscar nos textos
       </label>
-      <div className="flex items-center gap-3 rounded-2xl border border-[#cbd8ce] bg-white px-4 py-3 shadow-[0_12px_35px_rgba(55,72,61,0.06)] focus-within:border-[#789980] focus-within:ring-4 focus-within:ring-[#b9cfbd]/35">
+      <div className="flex h-11 items-center gap-2.5 rounded-md border border-input bg-background px-3 transition-shadow focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/25">
         {state === 'loading' ? (
           <LoaderCircle
-            className="size-5 shrink-0 animate-spin text-[#52705c]"
+            className="size-4 shrink-0 animate-spin text-muted-foreground"
             aria-hidden="true"
           />
         ) : (
           <Search
-            className="size-5 shrink-0 text-[#718078]"
+            className="size-4 shrink-0 text-muted-foreground"
             aria-hidden="true"
           />
         )}
         <input
-          id="global-search"
+          id={id}
           type="search"
           value={query}
           onChange={(event) => handleQueryChange(event.target.value)}
+          onFocus={() => setPanelOpen(true)}
           onKeyDown={(event) => {
-            if (event.key === 'Escape') handleQueryChange('');
+            if (event.key !== 'Escape') return;
+            // O navegador limpa campos de busca com Esc; aqui o primeiro Esc só fecha os resultados.
+            if (floating && panelOpen && hasQuery) {
+              event.preventDefault();
+              setPanelOpen(false);
+            } else if (query) {
+              event.stopPropagation();
+              handleQueryChange('');
+            }
           }}
-          placeholder="Ex.: santificação, Escritura, tese 36..."
+          aria-controls={`${id}-resultados`}
+          placeholder="Ex.: santificação, Escritura, tese 36…"
           autoComplete="off"
-          className="min-w-0 flex-1 bg-transparent text-sm text-[#304138] outline-none placeholder:text-[#9aa69e]"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (
           <button
             type="button"
             onClick={() => handleQueryChange('')}
-            className="rounded-full p-1 text-[#84938a] transition hover:bg-[#eef4ef] hover:text-[#52705c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#52705c]"
+            className="rounded-sm p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
             aria-label="Limpar busca"
           >
             <X className="size-4" />
@@ -108,57 +149,64 @@ export default function HomeSearch() {
         )}
       </div>
 
+      <p className="mt-3 text-xs text-muted-foreground">
+        Digite pelo menos duas letras para buscar em todos os textos.
+      </p>
+
       <div
-        id="global-search-results"
-        className="mt-3"
+        id={`${id}-resultados`}
         aria-live="polite"
         aria-atomic="true"
-      >
-        {state === 'ready' && groupedResults.length > 0 && (
-          <div className="rounded-2xl border border-[#d8e0d8] bg-white/75 p-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {groupedResults.map(([documentTitle, documentResults]) => (
-                <div key={documentTitle}>
-                  <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#718078]">
-                    {documentTitle}
-                  </p>
-                  <div className="space-y-1">
-                    {documentResults.map((result) => (
-                      <Link
-                        key={result.href}
-                        href={result.href}
-                        className="group block rounded-xl px-3 py-2.5 transition hover:bg-[#eef4ef] focus-visible:bg-[#eef4ef] focus-visible:outline-2 focus-visible:outline-[#52705c]"
-                      >
-                        <span className="flex items-center justify-between gap-3 text-sm font-semibold text-[#3f5e4b]">
-                          {result.label}
-                          <ArrowUpRight className="size-4 shrink-0 text-[#84938a] transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                        </span>
-                        <span className="mt-1 block text-xs leading-5 text-[#718078]">
-                          {result.excerpt}
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        hidden={!hasQuery || state === 'idle' || (floating && !panelOpen)}
+        className={cn(
+          'mt-2 max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain rounded-md border border-border bg-card',
+          floating && 'absolute inset-x-0 top-11 z-20 shadow-lg',
         )}
-        {state === 'ready' && hasQuery && groupedResults.length === 0 && (
-          <p className="rounded-2xl border border-dashed border-[#cbd8ce] bg-white/50 px-4 py-3 text-sm text-[#718078]">
-            Nenhum trecho encontrado para “{query.trim()}”.
+      >
+        {state === 'loading' && results.length === 0 && (
+          <p className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
+            <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />{' '}
+            Buscando…
           </p>
+        )}
+        {state !== 'error' &&
+          groupedResults.map(([documentTitle, documentResults]) => (
+            <section key={documentTitle} aria-label={documentTitle}>
+              <p className="sticky top-0 border-b border-border bg-subtle px-4 py-2 text-xs font-semibold text-muted-foreground">
+                {documentTitle}{' '}
+                <span className="font-normal">({documentResults.length})</span>
+              </p>
+              <ul className="divide-y divide-border border-b border-border last:border-b-0">
+                {documentResults.map((result) => (
+                  <li key={result.href}>
+                    <Link
+                      href={result.href}
+                      onClick={onNavigate}
+                      className="block px-4 py-2.5 transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                    >
+                      <span className="block text-sm font-semibold text-link">
+                        {result.label}
+                      </span>
+                      <span className="mt-0.5 line-clamp-2 block text-xs leading-5 text-muted-foreground">
+                        {result.excerpt}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        {state === 'ready' && groupedResults.length === 0 && (
+          <Notice className="m-2">
+            Nada encontrado para “{query.trim()}”. Tente outra palavra.
+          </Notice>
         )}
         {state === 'error' && (
-          <p className="rounded-2xl border border-[#e5c5bd] bg-[#fff7f4] px-4 py-3 text-sm text-[#875348]">
-            Não foi possível pesquisar agora. Tente novamente em alguns
-            instantes.
-          </p>
+          <Notice tone="danger" className="m-2">
+            Não foi possível buscar agora. Tente novamente em alguns instantes.
+          </Notice>
         )}
       </div>
-      <p className="mt-3 text-xs text-[#84938a]">
-        Digite pelo menos duas letras para pesquisar em todo o acervo.
-      </p>
     </div>
   );
 }

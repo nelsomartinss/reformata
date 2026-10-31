@@ -1,165 +1,143 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import type { PassageBatchResponse, PassageResponse } from '@/lib/bible';
+import { useEffect, useId, useState } from 'react';
+import { LoaderCircle } from 'lucide-react';
+import Notice from '@/components/notice';
+import { Panel, PanelBody, PanelHeader, PanelTitle } from '@/components/panel';
+import type { PassageBatchResponse } from '@/lib/bible/types';
 
-type PassagePanelProps = {
-  references: string[];
-  version: string;
+type PassageTarget = {
   documentSlug: string;
   entryNumber?: number;
   chapterNumber?: number;
   paragraphNumber?: number;
 };
 
-export default function PassagePanel({
-  references,
-  version,
+type PassagePanelProps = PassageTarget & {
+  references: string[];
+};
+
+type LoadState =
+  | { status: 'loading' }
+  | { status: 'error' }
+  | { status: 'ready'; data: PassageBatchResponse };
+
+function PassageList({
   documentSlug,
   entryNumber,
   chapterNumber,
   paragraphNumber,
-}: PassagePanelProps) {
-  const [passages, setPassages] = useState<PassageResponse[]>([]);
-  const [failedReferences, setFailedReferences] = useState<string[]>([]);
-  const [state, setState] = useState<
-    'loading' | 'ready' | 'unavailable' | 'error' | 'empty'
-  >(references.length === 0 ? 'empty' : 'loading');
+}: PassageTarget) {
+  const [state, setState] = useState<LoadState>({ status: 'loading' });
 
   useEffect(() => {
-    let active = true;
-    if (references.length === 0) {
-      return () => {
-        active = false;
-      };
-    }
-    const params = new URLSearchParams({
-      document: documentSlug,
-      version,
-    });
+    const controller = new AbortController();
+    const params = new URLSearchParams({ document: documentSlug });
     if (chapterNumber !== undefined && paragraphNumber !== undefined) {
       params.set('chapter', String(chapterNumber));
       params.set('paragraph', String(paragraphNumber));
     } else if (entryNumber !== undefined) {
       params.set('number', String(entryNumber));
     }
-    fetch('/api/bible/passages?' + params.toString())
+    fetch('/api/bible/passages?' + params.toString(), {
+      signal: controller.signal,
+    })
       .then(async (response) => {
-        const data = (await response.json()) as {
-          error?: string;
-          passages?: PassageResponse[];
-          failedReferences?: string[];
-        };
-        if (!response.ok) throw new Error(data.error ?? 'ERRO');
-        return {
-          passages: data.passages ?? [],
-          failedReferences: data.failedReferences ?? [],
-        } satisfies PassageBatchResponse;
+        if (!response.ok) throw new Error('PASSAGENS_INDISPONIVEIS');
+        return (await response.json()) as PassageBatchResponse;
       })
-      .then((data) => {
-        if (!active) return;
-        setPassages(data.passages);
-        setFailedReferences(data.failedReferences);
-        setState('ready');
-      })
+      .then((data) => setState({ status: 'ready', data }))
       .catch((error: Error) => {
-        if (!active) return;
-        setState(
-          error.message === 'TRADUCAO_NAO_CONFIGURADA' ||
-            error.message === 'API_CHAVE_NAO_CONFIGURADA'
-            ? 'unavailable'
-            : 'error',
-        );
+        if (error.name !== 'AbortError') setState({ status: 'error' });
       });
-    return () => {
-      active = false;
-    };
-  }, [
-    chapterNumber,
-    documentSlug,
-    entryNumber,
-    paragraphNumber,
-    references.length,
-    version,
-  ]);
+    return () => controller.abort();
+  }, [chapterNumber, documentSlug, entryNumber, paragraphNumber]);
+
+  if (state.status === 'loading') {
+    return (
+      <output className="block">
+        <Notice>
+          <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />{' '}
+          Carregando os textos bíblicos…
+        </Notice>
+      </output>
+    );
+  }
+  if (state.status === 'error') {
+    return (
+      <Notice tone="danger">
+        Não foi possível carregar os textos bíblicos agora. Verifique sua
+        conexão e tente novamente.
+      </Notice>
+    );
+  }
+
+  const { passages, failedReferences } = state.data;
+  return (
+    <div className="space-y-3">
+      <div className="divide-y divide-border overflow-hidden rounded-md border border-border">
+        {passages.map((passage, index) => (
+          <article
+            key={`${passage.reference}-${index}`}
+            className="px-4 py-3.5 sm:px-5"
+          >
+            <h3 className="text-sm font-semibold text-link">
+              {passage.reference}
+            </h3>
+            <p className="mt-1.5 font-serif text-[1.0625rem] leading-7">
+              {passage.verses.map((verse, index) => (
+                <span key={verse.number}>
+                  {passage.verses.length > 1 && (
+                    <sup className="mr-1 font-sans text-[0.68em] font-semibold text-muted-foreground">
+                      {verse.number}
+                    </sup>
+                  )}
+                  {verse.text}
+                  {index < passage.verses.length - 1 && ' '}
+                </span>
+              ))}
+            </p>
+          </article>
+        ))}
+      </div>
+      {failedReferences.length > 0 && (
+        <Notice tone="warning">
+          Não encontramos o texto de: {failedReferences.join(', ')}.
+        </Notice>
+      )}
+    </div>
+  );
+}
+
+export default function PassagePanel({
+  references,
+  ...target
+}: PassagePanelProps) {
+  const headingId = useId();
 
   return (
-    <section className="mt-8" aria-labelledby="references-heading">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="eyebrow">Referências bíblicas</p>
-          <h2
-            id="references-heading"
-            className="mt-1 font-serif text-2xl font-semibold text-foreground"
-          >
-            Textos que fundamentam esta afirmação
-          </h2>
-        </div>
-        <Badge
-          variant="outline"
-          className="rounded-full border-[#c7d5cc] bg-[#eef4ef] px-3 py-1 text-[#3f5e4b]"
-        >
-          {version.toUpperCase()}
-        </Badge>
-      </div>
-      {state === 'loading' && (
-        <output className="mt-5 rounded-2xl border border-dashed border-[#c9d3cc] bg-white/60 p-5 text-sm text-muted-foreground">
-          Consultando as passagens autorizadas…
-        </output>
-      )}
-      {state === 'unavailable' && (
-        <div className="mt-5 rounded-2xl border border-[#e0d4ba] bg-[#fffaf0] p-5 text-sm leading-6 text-[#6d6048]">
-          A tradução selecionada ainda não está conectada a uma licença neste
-          ambiente. As referências continuam disponíveis acima; o texto bíblico
-          será exibido assim que a chave autorizada for configurada.
-        </div>
-      )}
-      {state === 'error' && (
-        <div className="mt-5 rounded-2xl border border-[#e5c5bd] bg-[#fff7f4] p-5 text-sm leading-6 text-[#875348]">
-          Não foi possível carregar as passagens agora. Tente novamente em
-          alguns instantes.
-        </div>
-      )}
-      {state === 'empty' && (
-        <div className="mt-5 rounded-2xl border border-[#d7dfd8] bg-white/60 p-5 text-sm leading-6 text-muted-foreground">
-          Esta edição da Confissão não registra referências bíblicas adicionais
-          para esta afirmação.
-        </div>
-      )}
-      {state === 'ready' && (
-        <div className="mt-5 space-y-4">
-          {failedReferences.length > 0 && (
-            <p className="rounded-2xl border border-[#e0d4ba] bg-[#fffaf0] p-4 text-sm leading-6 text-[#6d6048]">
-              Algumas referências não estão disponíveis nesta tradução:{' '}
-              {failedReferences.join(', ')}.
-            </p>
-          )}
-          {passages.map((passage) => (
-            <article
-              key={passage.passageId}
-              className="rounded-2xl border border-[#dbe4dd] bg-[#f7faf7] p-5 sm:p-6"
-            >
-              <h3 className="text-sm font-bold tracking-wide text-[#476452]">
-                {passage.reference}
-              </h3>
-              <p className="mt-3 font-serif text-lg leading-8 text-[#2d3b34]">
-                {passage.content}
-              </p>
-            </article>
-          ))}
-          <p className="flex items-center gap-2 text-xs leading-5 text-muted-foreground">
-            <ShieldCheck className="size-3.5" /> Texto fornecido por provedor
-            bíblico autorizado. Direitos reservados ao editor da tradução.
+    <Panel aria-labelledby={headingId}>
+      <PanelHeader>
+        <PanelTitle id={headingId}>Referências bíblicas</PanelTitle>
+        {references.length > 0 && (
+          <span className="text-xs text-muted-foreground">
+            {references.length}{' '}
+            {references.length === 1 ? 'passagem' : 'passagens'} · Bíblia Livre
+          </span>
+        )}
+      </PanelHeader>
+      <PanelBody className="space-y-4">
+        {references.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Não há referências bíblicas registradas para este trecho.
           </p>
-          {passages[0]?.copyright && (
-            <p className="text-xs leading-5 text-muted-foreground">
-              {passages[0].copyright}
-            </p>
-          )}
-        </div>
-      )}
-    </section>
+        ) : (
+          <PassageList
+            key={`${target.documentSlug}-${target.entryNumber}-${target.chapterNumber}-${target.paragraphNumber}`}
+            {...target}
+          />
+        )}
+      </PanelBody>
+    </Panel>
   );
 }

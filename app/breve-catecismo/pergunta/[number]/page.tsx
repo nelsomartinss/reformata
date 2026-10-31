@@ -16,10 +16,10 @@ export async function generateMetadata({
   const entry = getShortEntry(Number(number));
   return entry
     ? {
-        title: "Pergunta " + entry.number + " — Breve Catecismo | REFORMATA",
+        title: "Pergunta " + entry.number + " — Breve Catecismo",
         description: entry.question,
       }
-    : { title: "Pergunta não encontrada | REFORMATA" };
+    : { title: "Pergunta não encontrada" };
 }
 
 export default async function ShortQuestionPage({

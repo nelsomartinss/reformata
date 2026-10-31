@@ -3,7 +3,7 @@ import Reader from "@/components/reader";
 import { shortCatechism } from "@/lib/short-catechism";
 
 export const metadata: Metadata = {
-  title: "Breve Catecismo de Westminster | REFORMATA",
+  title: "Breve Catecismo de Westminster",
   description:
     "Leia as 107 perguntas e respostas do Breve Catecismo de Westminster com suas referências bíblicas.",
 };

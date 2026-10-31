@@ -15,10 +15,10 @@ export async function generateMetadata({
   const entry = getEntry(Number(number));
   return entry
     ? {
-        title: `Pergunta ${entry.number} — Catecismo Maior | REFORMATA`,
+        title: `Pergunta ${entry.number} — Catecismo Maior`,
         description: entry.question,
       }
-    : { title: "Pergunta não encontrada | REFORMATA" };
+    : { title: "Pergunta não encontrada" };
 }
 export default async function QuestionPage({
   params,

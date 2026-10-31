@@ -21,10 +21,10 @@ export async function generateMetadata({
   const entry = getConfessionParagraph(Number(chapter), Number(paragraph));
   return entry
     ? {
-        title: `Capítulo ${entry.chapter.roman}, afirmação ${entry.paragraph.roman} | REFORMATA`,
+        title: `Capítulo ${entry.chapter.roman}, parágrafo ${entry.paragraph.roman} — Confissão de Fé`,
         description: entry.paragraph.statement,
       }
-    : { title: 'Afirmação não encontrada | REFORMATA' };
+    : { title: 'Parágrafo não encontrado' };
 }
 
 export default async function ConfessionParagraphPage({

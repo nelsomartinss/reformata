@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import HomePage from '@/components/home-page';
 
 export const metadata: Metadata = {
-  title: 'REFORMATA',
+  title: { absolute: 'Reformata · A fé reformada' },
   description:
     'Explore os catecismos de Westminster, a Confissão de Fé e as 95 Teses em uma biblioteca digital para leitura e estudo.',
 };

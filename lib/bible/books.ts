@@ -53,6 +53,19 @@ const aliases: Record<string, string> = {
   gl: 'GAL',
   ef: 'EPH',
   fp: 'PHP',
+  fl: 'PHP',
+  ezq: 'EZK',
+  esdras: 'EZR',
+  judas: 'JUD',
+  joel: 'JOL',
+  exo: 'EXO',
+  mar: 'MRK',
+  '1sam': '1SA',
+  '2sam': '2SA',
+  '1tess': '1TH',
+  '2tess': '2TH',
+  '1cor': '1CO',
+  '2cor': '2CO',
   cl: 'COL',
   '1ts': '1TH',
   '2ts': '2TH',
@@ -86,6 +99,8 @@ export function getCanonicalBookId(value: string) {
   if (raw === 'j\u00f3') return 'JOB';
   if (canonicalBookIds.includes(raw.toUpperCase())) return raw.toUpperCase();
   const normalized = normalizeBookName(value);
+  // "Is" (Isaías) não deve ser lido como o numeral romano "I" + "s".
+  if (aliases[normalized]) return aliases[normalized];
   const romanPrefix = normalized.match(/^(i{1,3})([a-z\u00c0-\u00ff]+)$/);
   if (romanPrefix) {
     const romanToArabic: Record<string, string> = { i: '1', ii: '2', iii: '3' };
@@ -93,5 +108,8 @@ export function getCanonicalBookId(value: string) {
   }
   return aliases[normalized];
 }
+
+/** Livros com um só capítulo, citados às vezes só pelo versículo (ex.: "Jd 6"). */
+export const singleChapterBookIds = ['OBA', 'PHM', '2JN', '3JN', 'JUD'];
 
 export const canonicalBookIds = [...new Set(Object.values(aliases))];
