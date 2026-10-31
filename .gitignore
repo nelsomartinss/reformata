@@ -40,3 +40,11 @@ yarn-error.log*
 # agents
 AGENTS.md
 CLAUDE.md
+
+# typescript (gerados automaticamente)
+*.tsbuildinfo
+next-env.d.ts
+
+# builds antigos e configuração local de ferramentas
+/.artifacts/
+/.openai/
