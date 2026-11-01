@@ -1,5 +1,6 @@
 import { confessionParagraphs } from '@/lib/confession';
 import { greaterCatechism } from '@/lib/catechism';
+import { solas } from '@/lib/solas';
 import { lutherTheses } from '@/lib/theses';
 import { shortCatechism } from '@/lib/short-catechism';
 import { parseBibleReferenceList } from './parser';
@@ -21,7 +22,11 @@ function createIndex() {
     try {
       parsedReferences = parseBibleReferenceList(args.references);
     } catch (error) {
-      console.warn('[Reformata] referência ignorada no índice bíblico', args, error);
+      console.warn(
+        '[Reformata] referência ignorada no índice bíblico',
+        args,
+        error,
+      );
       return;
     }
 
@@ -93,12 +98,28 @@ function createIndex() {
     }),
   );
 
+  solas.forEach((sola) =>
+    addEntry({
+      documentSlug: '5-solas',
+      documentTitle: 'As 5 Solas da Reforma Protestante',
+      kind: 'study',
+      label: `${sola.name} (${sola.translation})`,
+      excerpt: sola.definition,
+      href: `/5-solas#${sola.slug}`,
+      references: sola.references,
+    }),
+  );
+
   return links;
 }
 
 export const bibleReferenceIndex = createIndex();
 
-export function getBibleReferenceLinks(book: string, chapter: number, verse: number) {
+export function getBibleReferenceLinks(
+  book: string,
+  chapter: number,
+  verse: number,
+) {
   return bibleReferenceIndex.filter(
     (link) =>
       link.book === book &&

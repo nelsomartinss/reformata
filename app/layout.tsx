@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono, Source_Serif_4 } from 'next/font/google';
+import { Cinzel, Geist, Geist_Mono, Source_Serif_4 } from 'next/font/google';
 import FeedbackWidget from '@/components/feedback-widget';
 import { DARK_QUERY, THEME_STORAGE_KEY } from '@/lib/theme';
 import './globals.css';
@@ -13,6 +13,12 @@ const sourceSerif = Source_Serif_4({
   variable: '--font-reading',
   subsets: ['latin'],
   style: ['normal', 'italic'],
+});
+// Fonte de destaque, usada só nos nomes em latim das 5 Solas.
+const cinzel = Cinzel({
+  variable: '--font-display-face',
+  subsets: ['latin'],
+  weight: ['600'],
 });
 
 // Antes da primeira pintura: usa a escolha manual, se houver; senão, o tema do sistema.
@@ -51,7 +57,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} ${cinzel.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

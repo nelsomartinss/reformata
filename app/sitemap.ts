@@ -29,5 +29,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       })),
     ),
     { url: base + '/95-teses', changeFrequency: 'monthly', priority: 0.9 },
+    { url: base + '/5-solas', changeFrequency: 'monthly', priority: 0.9 },
   ];
 }

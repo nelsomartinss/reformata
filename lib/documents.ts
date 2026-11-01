@@ -33,6 +33,12 @@ export const siteDocuments: SiteDocument[] = [
     label: '95 Teses',
     title: '95 Teses de Martinho Lutero',
   },
+  {
+    slug: '5-solas',
+    href: '/5-solas',
+    label: '5 Solas',
+    title: 'As 5 Solas da Reforma Protestante',
+  },
 ];
 
 export function findDocumentByPath(pathname: string) {

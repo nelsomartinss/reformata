@@ -7,6 +7,7 @@ import {
   FileText,
   Library,
   ScrollText,
+  Sparkles,
 } from 'lucide-react';
 import HomeSearch from '@/components/home-search';
 import { Panel, PanelBody, PanelHeader, PanelTitle } from '@/components/panel';
@@ -16,6 +17,7 @@ import { bibleBooks } from '@/lib/bible/catalog';
 import { greaterCatechism } from '@/lib/catechism';
 import { confessionChapters, confessionParagraphs } from '@/lib/confession';
 import { shortCatechism } from '@/lib/short-catechism';
+import { solas } from '@/lib/solas';
 import { thesesDocument } from '@/lib/theses';
 
 const quote = shortCatechism[0];
@@ -61,6 +63,14 @@ const documents = [
     meta: [`${thesesDocument.theses.length} teses`, thesesDocument.date],
     icon: ScrollText,
   },
+  {
+    href: '/5-solas',
+    title: 'As 5 Solas da Reforma Protestante',
+    description:
+      'Estudo sobre as cinco convicções centrais da Reforma, com definição, contexto e base bíblica.',
+    meta: [`${solas.length} solas`, 'Estudo'],
+    icon: Sparkles,
+  },
 ];
 
 const steps = [
@@ -90,8 +100,8 @@ export default function HomePage() {
                 Leia, pesquise e estude os textos da fé reformada.
               </h1>
               <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground">
-                Catecismos, Confissão de Fé, as 95 Teses e a Bíblia em um só
-                lugar, com as passagens bíblicas sempre à mão.
+                Catecismos, Confissão de Fé, as 95 Teses, as 5 Solas e a Bíblia
+                em um só lugar, com as passagens bíblicas sempre à mão.
               </p>
               <div className="mt-6 max-w-xl">
                 <HomeSearch floating />

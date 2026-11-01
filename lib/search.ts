@@ -1,6 +1,7 @@
 import { greaterCatechism, normalizeSearchText } from '@/lib/catechism';
 import { confessionChapters } from '@/lib/confession';
 import { shortCatechism } from '@/lib/short-catechism';
+import { solas } from '@/lib/solas';
 import { thesesDocument } from '@/lib/theses';
 
 export type GlobalSearchResult = {
@@ -120,6 +121,28 @@ export function searchAllDocuments(query: string): GlobalSearchResult[] {
         label: `Tese ${thesis.number}`,
         excerpt: excerpt(thesis.text),
         href: `/95-teses#tese-${thesis.number}`,
+      });
+    }
+    if (results.length >= MAX_RESULTS) return results;
+  }
+
+  for (const sola of solas) {
+    if (
+      matches(
+        normalizedQuery,
+        sola.name,
+        sola.translation,
+        sola.definition,
+        sola.context,
+        ...sola.references,
+      )
+    ) {
+      results.push({
+        documentSlug: '5-solas',
+        documentTitle: 'As 5 Solas',
+        label: sola.name,
+        excerpt: excerpt(sola.definition),
+        href: `/5-solas#${sola.slug}`,
       });
     }
     if (results.length >= MAX_RESULTS) return results;

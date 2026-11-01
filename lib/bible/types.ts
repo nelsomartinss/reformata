@@ -22,7 +22,7 @@ export type BibleReferenceLink = {
   label: string;
   excerpt: string;
   href: string;
-  kind: 'question' | 'paragraph' | 'thesis';
+  kind: 'question' | 'paragraph' | 'thesis' | 'study';
   sourceReference: string;
 };
 

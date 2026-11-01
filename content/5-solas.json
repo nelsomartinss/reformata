@@ -1,0 +1,51 @@
+{
+  "title": "As 5 Solas da Reforma Protestante",
+  "intro": "As cinco solas resumem as convicções centrais da Reforma Protestante do século XVI. Cada uma afirma, com a palavra latina sola (“somente”), aquilo que os reformadores entendiam ser exclusivo de Deus e da sua Palavra.",
+  "solas": [
+    {
+      "number": 1,
+      "slug": "sola-scriptura",
+      "name": "Sola Scriptura",
+      "translation": "Somente a Escritura",
+      "definition": "A Bíblia é a única regra de fé e prática inerrante, infalível e suficiente para o cristão.",
+      "context": "Os reformadores rejeitavam a ideia de que as tradições da igreja ou as decisões papais tivessem o mesmo peso de autoridade que as Escrituras Sagradas.",
+      "references": ["2Tm 3:16-17"]
+    },
+    {
+      "number": 2,
+      "slug": "sola-fide",
+      "name": "Sola Fide",
+      "translation": "Somente a Fé",
+      "definition": "A justificação e a salvação do ser humano acontecem exclusivamente por meio da fé em Jesus Cristo.",
+      "context": "Contrapunha-se diretamente à venda de indulgências e à visão de que as boas obras, rituais ou sacramentos humanos poderiam comprar ou merecer a salvação.",
+      "references": ["Rm 1:17"]
+    },
+    {
+      "number": 3,
+      "slug": "sola-gratia",
+      "name": "Sola Gratia",
+      "translation": "Somente a Graça",
+      "definition": "A salvação é um favor imerecido concedido voluntariamente por Deus.",
+      "context": "Enfatiza que o ser humano é completamente incapaz de salvar a si mesmo por seus próprios méritos, dependendo inteiramente da graça soberana e da iniciativa divina.",
+      "references": ["Ef 2:8-9"]
+    },
+    {
+      "number": 4,
+      "slug": "solus-christus",
+      "name": "Solus Christus",
+      "translation": "Somente Cristo",
+      "definition": "Jesus Cristo é o único mediador entre Deus e a humanidade.",
+      "context": "Reafirma que a salvação foi conquistada de forma completa e suficiente pela vida, morte e ressurreição de Jesus, invalidando a necessidade de mediação por santos, Maria ou pela hierarquia eclesiástica.",
+      "references": ["1Tm 2:5"]
+    },
+    {
+      "number": 5,
+      "slug": "soli-deo-gloria",
+      "name": "Soli Deo Gloria",
+      "translation": "Glória somente a Deus",
+      "definition": "Toda a criação, a salvação e a vida do cristão existem para a glória exclusiva de Deus.",
+      "context": "Nenhuma glória deve ser direcionada a líderes religiosos, papas, santos ou à própria capacidade humana, já que Deus é o autor e consumador de todas as coisas.",
+      "references": ["Rm 11:36"]
+    }
+  ]
+}
