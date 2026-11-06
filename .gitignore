@@ -37,10 +37,6 @@ yarn-error.log*
 /outputs/
 /work/
 
-# agents
-AGENTS.md
-CLAUDE.md
-
 # typescript (gerados automaticamente)
 *.tsbuildinfo
 next-env.d.ts
