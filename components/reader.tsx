@@ -10,11 +10,14 @@ import SideIndex, { IndexItem, IndexToggle } from '@/components/side-index';
 import SiteFooter from '@/components/site-footer';
 import SiteHeader from '@/components/site-header';
 import StudyTools from '@/components/study-tools';
+import type { PassageBatchResponse } from '@/lib/bible/types';
 import { searchEntries, type CatechismEntry } from '@/lib/catechism';
 
 type ReaderProps = {
   entries: CatechismEntry[];
   initialNumber: number;
+  /** Textos bíblicos da pergunta inicial, montados no servidor. */
+  initialPassages?: PassageBatchResponse;
   documentTitle?: string;
   documentSlug?: string;
 };
@@ -29,6 +32,7 @@ const descriptions: Record<string, string> = {
 export default function Reader({
   entries,
   initialNumber,
+  initialPassages,
   documentTitle = 'Catecismo Maior de Westminster',
   documentSlug = 'catecismo-maior',
 }: ReaderProps) {
@@ -150,6 +154,9 @@ export default function Reader({
               references={entry.references}
               documentSlug={documentSlug}
               entryNumber={entry.number}
+              initialData={
+                entry.number === initialNumber ? initialPassages : undefined
+              }
             />
 
             <div className="xl:hidden">

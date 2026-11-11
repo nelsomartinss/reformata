@@ -16,6 +16,7 @@ import SideIndex, { IndexItem, IndexToggle } from '@/components/side-index';
 import SiteFooter from '@/components/site-footer';
 import SiteHeader from '@/components/site-header';
 import StudyTools from '@/components/study-tools';
+import type { PassageBatchResponse } from '@/lib/bible/types';
 import { normalizeSearchText } from '@/lib/catechism';
 import type { ConfessionChapter } from '@/lib/confession';
 
@@ -23,12 +24,15 @@ type ConfessionReaderProps = {
   chapters: ConfessionChapter[];
   initialChapter: number;
   initialParagraph: number;
+  /** Textos bíblicos do parágrafo inicial, montados no servidor. */
+  initialPassages?: PassageBatchResponse;
 };
 
 export default function ConfessionReader({
   chapters,
   initialChapter,
   initialParagraph,
+  initialPassages,
 }: ConfessionReaderProps) {
   const router = useRouter();
   const firstChapter =
@@ -230,6 +234,12 @@ export default function ConfessionReader({
               documentSlug="confissao-de-fe"
               chapterNumber={chapter.number}
               paragraphNumber={entry.number}
+              initialData={
+                chapter.number === initialChapter &&
+                entry.number === initialParagraph
+                  ? initialPassages
+                  : undefined
+              }
             />
 
             <div className="xl:hidden">

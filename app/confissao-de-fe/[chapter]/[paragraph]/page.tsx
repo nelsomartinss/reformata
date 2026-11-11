@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import ConfessionReader from '@/components/confession-reader';
+import { getPassages } from '@/lib/bible/local';
 import { confessionChapters, getConfessionParagraph } from '@/lib/confession';
 
 export function generateStaticParams() {
@@ -40,6 +41,7 @@ export default async function ConfessionParagraphPage({
       chapters={confessionChapters}
       initialChapter={entry.chapter.number}
       initialParagraph={entry.paragraph.number}
+      initialPassages={getPassages(entry.paragraph.references)}
     />
   );
 }

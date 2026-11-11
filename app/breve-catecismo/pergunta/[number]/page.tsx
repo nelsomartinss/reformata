@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import Reader from "@/components/reader";
-import { getShortEntry, shortCatechism } from "@/lib/short-catechism";
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import Reader from '@/components/reader';
+import { getPassages } from '@/lib/bible/local';
+import { getShortEntry, shortCatechism } from '@/lib/short-catechism';
 
 export function generateStaticParams() {
   return shortCatechism.map((entry) => ({ number: String(entry.number) }));
@@ -16,10 +17,10 @@ export async function generateMetadata({
   const entry = getShortEntry(Number(number));
   return entry
     ? {
-        title: "Pergunta " + entry.number + " — Breve Catecismo",
+        title: 'Pergunta ' + entry.number + ' — Breve Catecismo',
         description: entry.question,
       }
-    : { title: "Pergunta não encontrada" };
+    : { title: 'Pergunta não encontrada' };
 }
 
 export default async function ShortQuestionPage({
@@ -34,6 +35,7 @@ export default async function ShortQuestionPage({
     <Reader
       entries={shortCatechism}
       initialNumber={entry.number}
+      initialPassages={getPassages(entry.references)}
       documentTitle="Breve Catecismo de Westminster"
       documentSlug="breve-catecismo"
     />

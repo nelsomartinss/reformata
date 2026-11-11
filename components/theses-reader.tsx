@@ -76,7 +76,7 @@ export default function ThesesReader() {
                   </li>
                 ))}
               </ol>
-              <p className="border-t border-border bg-subtle px-4 py-3 text-center font-serif text-sm italic text-muted-foreground sm:px-8">
+              <p className="border-t border-border bg-subtle px-4 py-3 text-center font-serif-italic text-sm italic text-muted-foreground sm:px-8">
                 {thesesDocument.location}, {thesesDocument.date}
               </p>
             </Panel>

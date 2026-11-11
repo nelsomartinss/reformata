@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import Reader from "@/components/reader";
-import { getEntry, greaterCatechism } from "@/lib/catechism";
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import Reader from '@/components/reader';
+import { getPassages } from '@/lib/bible/local';
+import { getEntry, greaterCatechism } from '@/lib/catechism';
 
 export function generateStaticParams() {
   return greaterCatechism.map((entry) => ({ number: String(entry.number) }));
@@ -18,7 +19,7 @@ export async function generateMetadata({
         title: `Pergunta ${entry.number} — Catecismo Maior`,
         description: entry.question,
       }
-    : { title: "Pergunta não encontrada" };
+    : { title: 'Pergunta não encontrada' };
 }
 export default async function QuestionPage({
   params,
@@ -28,5 +29,11 @@ export default async function QuestionPage({
   const { number } = await params;
   const entry = getEntry(Number(number));
   if (!entry) notFound();
-  return <Reader entries={greaterCatechism} initialNumber={entry.number} />;
+  return (
+    <Reader
+      entries={greaterCatechism}
+      initialNumber={entry.number}
+      initialPassages={getPassages(entry.references)}
+    />
+  );
 }

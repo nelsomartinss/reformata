@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import ConfessionReader from '@/components/confession-reader';
+import { getPassages } from '@/lib/bible/local';
 import { confessionChapters } from '@/lib/confession';
 
 export const metadata: Metadata = {
@@ -14,6 +15,9 @@ export default function ConfessionPage() {
       chapters={confessionChapters}
       initialChapter={1}
       initialParagraph={1}
+      initialPassages={getPassages(
+        confessionChapters[0].paragraphs[0].references,
+      )}
     />
   );
 }

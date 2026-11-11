@@ -1,24 +1,20 @@
 import type { Metadata, Viewport } from 'next';
-import { Cinzel, Geist, Geist_Mono, Source_Serif_4 } from 'next/font/google';
+import { Geist, Source_Serif_4 } from 'next/font/google';
 import FeedbackWidget from '@/components/feedback-widget';
 import { DARK_QUERY, THEME_STORAGE_KEY } from '@/lib/theme';
 import './globals.css';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
 const sourceSerif = Source_Serif_4({
   variable: '--font-reading',
   subsets: ['latin'],
-  style: ['normal', 'italic'],
 });
-// Fonte de destaque, usada só nos nomes em latim das 5 Solas.
-const cinzel = Cinzel({
-  variable: '--font-display-face',
+// O itálico aparece em poucos lugares: sem pré-carga, só baixa onde for usado.
+const sourceSerifItalic = Source_Serif_4({
+  variable: '--font-reading-italic',
   subsets: ['latin'],
-  weight: ['600'],
+  style: ['italic'],
+  preload: false,
 });
 
 // Antes da primeira pintura: usa a escolha manual, se houver; senão, o tema do sistema.
@@ -57,7 +53,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} ${cinzel.variable}`}
+      className={`${geistSans.variable} ${sourceSerif.variable} ${sourceSerifItalic.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

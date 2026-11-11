@@ -15,6 +15,8 @@ type PassageTarget = {
 
 type PassagePanelProps = PassageTarget & {
   references: string[];
+  /** Textos já montados no servidor; evita buscar a API na primeira carga. */
+  initialData?: PassageBatchResponse;
 };
 
 type LoadState =
@@ -27,10 +29,18 @@ function PassageList({
   entryNumber,
   chapterNumber,
   paragraphNumber,
-}: PassageTarget) {
-  const [state, setState] = useState<LoadState>({ status: 'loading' });
+  initialData,
+}: PassageTarget & { initialData?: PassageBatchResponse }) {
+  const [fetched, setFetched] = useState<LoadState>({ status: 'loading' });
+  // Os dados do servidor podem chegar depois que a busca já começou (navegação
+  // no cliente); quando existem, eles prevalecem e a busca é cancelada.
+  const state: LoadState = initialData
+    ? { status: 'ready', data: initialData }
+    : fetched;
+  const hasInitialData = initialData !== undefined;
 
   useEffect(() => {
+    if (hasInitialData) return;
     const controller = new AbortController();
     const params = new URLSearchParams({ document: documentSlug });
     if (chapterNumber !== undefined && paragraphNumber !== undefined) {
@@ -46,12 +56,18 @@ function PassageList({
         if (!response.ok) throw new Error('PASSAGENS_INDISPONIVEIS');
         return (await response.json()) as PassageBatchResponse;
       })
-      .then((data) => setState({ status: 'ready', data }))
+      .then((data) => setFetched({ status: 'ready', data }))
       .catch((error: Error) => {
-        if (error.name !== 'AbortError') setState({ status: 'error' });
+        if (error.name !== 'AbortError') setFetched({ status: 'error' });
       });
     return () => controller.abort();
-  }, [chapterNumber, documentSlug, entryNumber, paragraphNumber]);
+  }, [
+    chapterNumber,
+    documentSlug,
+    entryNumber,
+    hasInitialData,
+    paragraphNumber,
+  ]);
 
   if (state.status === 'loading') {
     return (
@@ -111,6 +127,7 @@ function PassageList({
 
 export default function PassagePanel({
   references,
+  initialData,
   ...target
 }: PassagePanelProps) {
   const headingId = useId();
@@ -135,6 +152,7 @@ export default function PassagePanel({
           <PassageList
             key={`${target.documentSlug}-${target.entryNumber}-${target.chapterNumber}-${target.paragraphNumber}`}
             {...target}
+            initialData={initialData}
           />
         )}
       </PanelBody>
